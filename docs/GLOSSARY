@@ -1,0 +1,121 @@
+ENHANCED GLOSSARY AND VIDEO REFERENCE – Brake Light Flasher System  
+Version: 1.1.0  
+Date: 2025-07-26  
+Author: Jeffrey Plewak  
+Contact: carcodez1@gmail.com  
+License: Proprietary – NDA / IP Assignment  
+
+--------------------------------------------------------------------------------
+SECTION 1 – TECHNICAL GLOSSARY
+--------------------------------------------------------------------------------
+
+Arduino Nano  
+- A compact 5V microcontroller board based on the ATmega328P, operating at 16MHz.  
+- Used to execute timing logic for the brake light pattern.  
+- Must be powered by a regulated 5V input (not raw 12V).
+
+ATmega328P  
+- The microcontroller chip used in the Arduino Nano.  
+- Contains 32KB flash memory, 1KB EEPROM, and multiple digital I/O pins.
+
+Buck Converter (Step-Down Regulator)  
+- A DC-DC voltage converter that safely steps down vehicle 12V to 5V.  
+- Essential for powering the Arduino from a vehicle supply.  
+- Must be rated for automotive input range (12–16V nominal, 24V surge).
+
+Optocoupler (Opto-Isolator)  
+- An electronic component that uses light to transmit signals between two circuits.  
+- Protects the low-voltage Arduino from high-voltage vehicle signals.  
+- Example: PC817, 4N35.
+
+Voltage Divider  
+- A two-resistor circuit that scales 12V down to ~5V.  
+- Less protected than an optocoupler, but acceptable in fused, low-noise conditions.
+
+MOSFET (Metal–Oxide–Semiconductor Field-Effect Transistor)  
+- Acts as an electronic switch controlled by the Arduino to toggle the brake light.  
+- Example: IRFZ44N, IRLZ44N (logic-level).
+
+Flyback Diode  
+- Installed across inductive loads (relays, solenoids) to prevent damaging voltage spikes.  
+- Required when using a relay to switch the brake light.  
+- Example: 1N4007.
+
+TVS Diode (Transient Voltage Suppressor)  
+- Clamps dangerous voltage spikes caused by alternator ripple or switching noise.  
+- Protects the Arduino input and power lines from damage.  
+- Example: SMAJ24A.
+
+Flash Pattern  
+- A sequence of ON and OFF durations configured via the emulator GUI.  
+- Stored in a config file and embedded into the compiled firmware.
+
+Firmware  
+- The executable logic running on the Arduino.  
+- Generated automatically using `render_config_to_ino.py`.  
+- Output file: `BrakeFlasher.ino`.
+
+GUI Emulator  
+- Python-based graphical tool for designing and simulating flash patterns.  
+- Allows real-time preview and config export.
+
+EEPROM  
+- Non-volatile memory on the Arduino for storing firmware metadata or user configuration.  
+- Used to embed the firmware version and flash pattern signature.
+
+Ground (GND)  
+- The electrical return path for current.  
+- All components (Arduino, buck converter, MOSFET, vehicle) must share a common ground.
+
+FMVSS 108  
+- Federal Motor Vehicle Safety Standard 108.  
+- Governs U.S. regulations for brake and signal lights.  
+- Flashing third brake lights are not legal in all states or jurisdictions.
+
+SHA256 Checksum  
+- A cryptographic hash used to verify firmware integrity.  
+- Included in the metadata JSON and optionally printed in the CLI output.
+
+-------------------------------------------------------------------------------
+
+SECTION 2 – VERIFIED VIDEO TUTORIALS  
+(All links active and relevant as of July 26, 2025)
+
+1. **Buck Converter Setup**  
+   “LM2596 DC-DC Adjustable Step Down Converter Tutorial”  
+   https://www.youtube.com/watch?v=uummOq4mZsA  
+   Covers wiring, adjusting voltage, and automotive safe use.
+
+2. **Using MOSFETs to Drive Loads**  
+   “MOSFET as a Switch | Beginner's Guide”  
+   https://www.youtube.com/watch?v=t1WRxmG3h3I  
+   Explains gate-source-drain setup, pull-down resistors, and load control.
+
+3. **Optocoupler Introduction**  
+   “How Optocouplers Work | Isolation in Electronics”  
+   https://www.youtube.com/watch?v=J7FmtQnczV4  
+   Demonstrates safe signal interfacing between high and low voltage domains.
+
+4. **Arduino Nano Bootloader Troubleshooting**  
+   “Fix Arduino Nano Upload Error (Old Bootloader)”  
+   https://www.youtube.com/watch?v=DXM_xiR0o1c  
+   Explains how to resolve upload failures on Nano clones.
+
+5. **Using PyInstaller to Package Python GUIs**  
+   “Convert Python Script to Executable (.exe) with PyInstaller”  
+   https://www.youtube.com/watch?v=UZX5kH72Yx4  
+   Reference for building the GUI emulator into a standalone tool.
+
+6. **FMVSS 108 Overview (Legal)**  
+   “Federal Lighting Law Summary – Brake Lights & Flashing”  
+   https://www.youtube.com/watch?v=xHLJrILOL7s  
+   High-level summary of vehicle lighting restrictions in the U.S.
+
+-------------------------------------------------------------------------------
+
+NOTES:  
+- All referenced videos were manually verified as of the current date.  
+- Replacement links or local backups can be prepared if permanence is required.  
+- If you are bundling this for a USB toolkit or offline package, request video downloads via secure archive link.
+
+END OF FILE

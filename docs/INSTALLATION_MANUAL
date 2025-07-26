@@ -1,0 +1,179 @@
+INSTALLATION MANUAL – Brake Light Flasher System  
+Version: 1.0.0  
+Date: 2025-07-26  
+Author: Jeffrey Plewak  
+Contact: carcodez1@gmail.com  
+License: Proprietary – NDA / IP Assignment  
+Target Vehicles: Hyundai / Kia (Third Brake Light only)  
+Target Microcontroller: Arduino Nano (ATmega328P, 5V, 16MHz)  
+
+--------------------------------------------------------------------------------
+SECTION 1 – SYSTEM PURPOSE AND SUMMARY
+--------------------------------------------------------------------------------
+
+This embedded control system modifies the behavior of a vehicle’s third brake light. When the brake pedal is pressed, the system generates a preconfigured flashing pattern followed by a solid-on state. The system is intended to increase visibility and improve driver safety.
+
+The Arduino Nano microcontroller executes timing logic defined by firmware generated through a GUI tool. It listens for a voltage signal from the vehicle’s brake circuit and triggers an output that activates the third brake light through a protected switching circuit.
+
+This document outlines safe installation procedures, electrical protections, hardware requirements, wiring logic, regulatory caveats, and failure handling protocols. It is intended for professional installers or engineers with responsibility for aftermarket automotive modifications.
+
+--------------------------------------------------------------------------------
+SECTION 2 – REQUIRED COMPONENTS AND TOOLS
+--------------------------------------------------------------------------------
+
+MANDATORY ELECTRONICS:
+
+- Arduino Nano (ATmega328P, 5V version)
+- 12V to 5V Step-Down Converter (Buck type, min 1A output, regulated)
+- Optocoupler (e.g., PC817 or 4N35) OR resistive voltage divider (10kΩ + 4.7kΩ)
+- N-Channel MOSFET (e.g., IRFZ44N) or 12V automotive relay
+- Flyback diode (e.g., 1N4007) across relay coil or light load
+- TVS diode (e.g., SMAJ24A) for surge suppression on 12V input line
+- Capacitors: 100μF electrolytic + 0.1μF ceramic on 5V rail
+- Wires rated for automotive use (AWG 18–22), crimp terminals, heat shrink
+- Fuse: inline, rated 1A–3A for 5V system protection
+
+RECOMMENDED TOOLS:
+
+- Digital multimeter (voltage + continuity testing)
+- Heat gun or soldering iron (for secure connections)
+- USB-A to Mini USB cable (for Arduino programming)
+- Arduino IDE or CLI installed (version ≥ 1.8.x)
+- Computer with Python 3 installed (for GUI use)
+
+--------------------------------------------------------------------------------
+SECTION 3 – PREPARATION AND COMPILATION
+--------------------------------------------------------------------------------
+
+1. Download the latest source code and emulator tool from:  
+   https://github.com/carcodez1/brake_mod_flash
+
+2. Generate your flash pattern using the included GUI tool:  
+   - Open `emulator_gui.py` using Python 3  
+   - Adjust sliders for ON/OFF cycles and final solid-hold duration  
+   - Export the configuration (JSON format)  
+   - Run the generator tool:  
+     `python render_config_to_ino.py`  
+   - This will generate:  
+     - `BrakeFlasher.ino` (Arduino firmware)  
+     - `firmware_version.json` (metadata with version, date, and hash)  
+
+3. Open `BrakeFlasher.ino` in Arduino IDE.  
+   Select:  
+   - Board: Arduino Nano  
+   - Processor: ATmega328P (Old Bootloader)  
+   - Port: COMxx (Windows) or /dev/ttyUSBx (Linux/macOS)
+
+4. Upload firmware to Arduino. Confirm successful upload.
+
+5. Record firmware version and configuration settings for future traceability.
+
+--------------------------------------------------------------------------------
+SECTION 4 – ELECTRICAL INSTALLATION PROCEDURE
+--------------------------------------------------------------------------------
+
+WARNING: Disconnect the vehicle battery before beginning any work.
+
+STEP 1: POWER WIRING  
+- Use a buck converter to step 12V vehicle power down to 5V.  
+- Connect:  
+   - VIN (12V from vehicle accessory line or fuse tap) → buck input  
+   - Buck GND → vehicle chassis  
+   - Buck output (5V) → Arduino 5V  
+   - Buck GND → Arduino GND
+
+STEP 2: INPUT SIGNAL CONNECTION  
+- Locate the third brake light signal wire (typically +12V when brake is pressed).  
+- Interface with Arduino input pin D3 via:  
+   OPTION A: Optocoupler  
+     - Input side: cathode/anode in series with brake signal + current-limiting resistor  
+     - Output side: collector to D3, emitter to GND with 10k pull-down resistor  
+   OPTION B: Voltage Divider  
+     - Connect 10kΩ resistor from brake signal to Arduino D3  
+     - Connect 4.7kΩ resistor from D3 to GND  
+
+STEP 3: OUTPUT SWITCHING  
+- Do NOT connect Arduino D4 directly to brake light circuit.  
+- Use a switching circuit:  
+   - Connect D4 → gate of IRFZ44N MOSFET  
+   - Source → GND  
+   - Drain → negative side of brake light circuit  
+   - Add 10kΩ pull-down resistor on gate  
+   - Flyback diode across the load terminals (anode to ground, cathode to +12V)
+
+STEP 4: GROUNDING  
+- Confirm that all grounds (Arduino, buck converter, MOSFET source) are tied to the same chassis ground point.
+
+STEP 5: PROTECTION  
+- Place TVS diode between input signal and ground  
+- Place 100µF and 0.1µF capacitors between 5V and GND at Arduino supply rail
+
+STEP 6: FUSING  
+- Use an inline fuse (1–3A) on the 5V power input to the Arduino for fire safety
+
+--------------------------------------------------------------------------------
+SECTION 5 – FUNCTIONAL VERIFICATION
+--------------------------------------------------------------------------------
+
+1. Reconnect the battery.  
+2. Apply brake pedal or simulate 12V brake signal.  
+3. Observe behavior of third brake light. It should flash as configured, then hold solid.  
+4. Confirm:  
+   - Pattern matches config  
+   - No unexpected flicker  
+   - No overheating of components  
+   - System resets cleanly on power loss  
+5. If needed, recompile and reupload firmware.
+
+--------------------------------------------------------------------------------
+SECTION 6 – SAFETY, COMPLIANCE, AND FALLBACK
+--------------------------------------------------------------------------------
+
+- This modification is not legal in all states. Flashing third brake lights may violate FMVSS 108 or local codes.  
+- Always confirm legal status before deploying.  
+- A solid-light firmware fallback is provided.  
+- If requested, installer can flash a non-flashing version using the same toolchain.  
+- Include version metadata with every install.  
+- Store a backup copy of the configuration and firmware used.
+
+--------------------------------------------------------------------------------
+SECTION 7 – TROUBLESHOOTING
+
+- Flashing not working  
+   → Check 5V supply, brake signal voltage, firmware presence  
+- Output stays ON or OFF  
+   → Check MOSFET wiring, signal logic level, pull-down resistor  
+- Upload fails  
+   → Use “Old Bootloader” profile and verify USB cable and COM port  
+- Random resets  
+   → Check for ground loop, unstable power, or missing capacitor filtering  
+- Brake light flickers  
+   → Check for weak power supply or missing flyback diode
+
+--------------------------------------------------------------------------------
+SECTION 8 – UNINSTALLATION PROCEDURE
+
+1. Disconnect battery.  
+2. Remove Arduino, converter, and switching components.  
+3. Restore factory wiring to third brake light.  
+4. Remove all custom connections, insulation, and adhesive mounts.  
+5. Reconnect battery and test OEM brake light behavior.  
+6. Erase installed firmware if hardware is reused.
+
+--------------------------------------------------------------------------------
+SECTION 9 – RECORDKEEPING AND SUPPORT
+
+Maintain the following per vehicle:
+
+- Date of install  
+- Version ID (from metadata)  
+- Installer identity  
+- Customer acknowledgment (if required)  
+- Hash of firmware used (SHA256)  
+
+Support contact:  
+Jeffrey Plewak  
+Email: carcodez1@gmail.com  
+Subject: BRAKE FLASHER INSTALLATION
+
+END OF FILE

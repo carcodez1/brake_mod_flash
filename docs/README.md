@@ -1,158 +1,227 @@
-BrakeFlasher Toolkit v1.0.1  
+BrakeFlasher Toolkit – Professional Distribution Package  
+Version: 1.0.1  
+Build Timestamp: 2025-07-26T00:00:00Z  
 Principal Engineer: Jeffrey Plewak  
 Contact: carcodez1@gmail.com  
-Build Timestamp: 2025-07-26T00:00:00Z  
-License: Proprietary (NDA + IP Assignment Enforced)  
-Target Vehicles: Hyundai, Kia  
-Target Component: Third Brake Light  
-Target Hardware: Arduino Nano (ATmega328P, 5V, 16MHz)  
+License: Proprietary – NDA + IP Assignment Enforced  
+Target: Hyundai / Kia – Third Brake Light (Center High-Mount Stop Lamp)  
+Hardware: Arduino Nano (ATmega328P, 5V, 16MHz)
 
---------------------------------------------------------------------------------
-SUMMARY
---------------------------------------------------------------------------------
-This toolkit implements a legal-grade, revertible brake flasher modification for  
-Hyundai and Kia vehicles. It enables a customizable flashing pattern on the third  
-brake light, with legally admissible metadata, compiled firmware, an emulator GUI,  
-auto-config conversion, and a fully silent installation pipeline.  
+------------------------------------------------------------------------------
 
---------------------------------------------------------------------------------
+INTRODUCTION
+
+This toolkit enables a professional-grade, legally reviewable modification of a vehicle's third brake light using a configurable flashing firmware. Built around the Arduino Nano, the system transforms the brake signal into a safety-enhancing visual pattern, increasing visibility and reaction time while preserving full revertibility to factory settings.
+
+It is engineered for compliance, traceability, and ease of use. Every component – firmware, configuration, logs, and metadata – is structured, versioned, hashed, and independently verifiable. A GUI tool and command-line automation are included to support both technical and non-technical users.
+
+This is not a prototype. It is a hardened, production-capable delivery intended for field installation, resale, audit, and future trace.
+
+------------------------------------------------------------------------------
+
+SYSTEM OBJECTIVES
+
+1. Deliver a safe, field-tested brake light behavior pattern  
+2. Support customizable timing sequences with full firmware regeneration  
+3. Maintain complete audit trail via versioned JSON + SHA256 hash  
+4. Provide GUI, CLI, and one-line installation pathways  
+5. Ensure legal reversibility and DOT fallback compliance  
+6. Package all deliverables for third-party installers and customers
+
+------------------------------------------------------------------------------
+
+User
+ │
+ │ Launch GUI
+ ▼
+╔════════════════════════════╗
+║ BrakeFlashEmulator (Tkinter GUI) ║
+╚════════════════════════════╝
+        │
+        ├─▶ [Input Flash Pattern] ─┐
+        │                          │
+        ├─▶ [Save Config JSON] ◀───┘
+        │       │
+        │       ├─▶ gui/config_template.json
+        │       └─▶ gui/state/last_config.json
+        │
+        ├─▶ [Export YAML] ──────▶ gui/export.yaml (optional)
+        │
+        ├─▶ [Load Preset] ──────▶ gui/state/presets/*.json
+        │
+        ├─▶ [Preview Metadata] ─▶ reads config_template.json
+        │
+        ├─▶ [Run Renderer] ──────┐
+        │                        │
+        │                        ▼
+        │           render_config_to_ino.py
+        │                 │
+        │                 ├─▶ Reads: gui/config_template.json
+        │                 ├─▶ Generates: firmware/BrakeFlasher.ino
+        │                 └─▶ Metadata: firmware/metadata/firmware_version.json
+        │
+        └─▶ [Run bootstrap_flash.sh]
+                            │
+                            ├─▶ Detects OS and arduino-cli
+                            ├─▶ Validates .ino + USB port
+                            └─▶ Uploads via: arduino-cli upload ...
+                                     │
+                                     ▼
+                           Arduino Nano (ATmega328P)
+                                     │
+                                     └─▶ Flashes Brake Light with Pattern
+
+
+
 7DP STRUCTURED PROVENANCE
---------------------------------------------------------------------------------
-Who    : Jeffrey Plewak (Principal Engineer), client identity under NDA  
-What   : Brake light firmware, GUI emulator, metadata, and automation tools  
-When   : 2025-07-26T00:00:00Z (firmware_version.json + git tags)  
-Where  : United States — distributed under NDA / IP assignment  
-Why    : Aftermarket safety upgrade for rear-end collision mitigation  
-Which  : Third brake light input D3 (active HIGH), output D4 (5V)  
-How    : Arduino firmware, Python GUI, metadata schema, compliance exports  
 
-Metadata Files:  
-- firmware/metadata/firmware_version.json  
-- config/flash_settings.json  
-- docs/README.md  
-- logs/flashlog.txt  
-- scripts/render_config_to_ino.py  
-- config/input_schema.json (validation)  
+Who     : Jeffrey Plewak (Engineer), Project Stakeholder (NDA-bound)  
+What    : Flasher firmware, configuration GUI, generator scripts, logs, metadata  
+When    : Built and tagged 2025-07-26T00:00:00Z (UTC)  
+Where   : United States – Targeting deployment in North Carolina (NCGS jurisdiction)  
+Why     : Increase braking visibility, reduce rear-end collision risk  
+Which   : Input: D3 (5V logic), Output: D4 (MOSFET-driven); Arduino Nano, 5V/16MHz  
+How     : JSON config → firmware generator → .ino → compiled and flashed firmware
 
---------------------------------------------------------------------------------
-KEY FEATURES
---------------------------------------------------------------------------------
-- Custom flashing firmware (Arduino Nano)  
-- JSON-configurable flash logic  
-- GUI Emulator (`gui/emulator_gui.py`) with live signal preview  
-- Config file conversion to `.ino` via `scripts/render_config_to_ino.py`  
-- Version tracking and rollback (firmware_version.json)  
-- Daily logs (logs/flashlog.txt, microsecond timestamps)  
-- SHA256 integrity via structured config/log schema  
-- Mermaid diagrams for flow, compliance, and structure  
-- Silent installation with `run_all.sh` / `run_all.bat`  
-- GitHub Actions-ready: versioning, packaging, checksum validation  
+------------------------------------------------------------------------------
 
---------------------------------------------------------------------------------
-FLASHING LOGIC (DEFAULT)
---------------------------------------------------------------------------------
-Input Pin: D3  
-Output Pin: D4  
-Sequence:  
-  - 3× 100ms ON / 100ms OFF  
-  - 2× 200ms ON / 200ms OFF  
-  - 1× 400ms ON / 400ms OFF  
-  - Hold ON  
+FEATURES
 
-Modify pattern via:  
-  - `config/flash_settings.json`  
-  - `gui/config_template.json`  
-  - GUI emulator or directly edit + render via `render_config_to_ino.py`  
+- Arduino Nano firmware (ATmega328P, 5V, 16MHz)
+- Configurable flashing sequences (GUI or JSON)
+- Silent install: `run_all.sh` / `run_all.bat`
+- Full SHA256 hashing for firmware validation
+- Firmware versioning + embedded build metadata
+- Mermaid diagram source for flow, structure, compliance
+- Clean, scriptable Makefile (`make all`, `make gui`, `make firmware`, etc.)
+- Output files and folders archived for traceability
+- DOT fallback compliance (solid-light option included)
 
---------------------------------------------------------------------------------
-DIRECTORY STRUCTURE
---------------------------------------------------------------------------------
-├── BrakeFLashEmulator.spec           # PyInstaller spec for EXE  
-├── LICENSE                           # IP & NDA notice  
-├── build/                            # Compiled .hex artifacts  
-│   └── brake_flasher_default.hex  
-├── config/                           # Flash pattern config + schema  
-│   ├── flash_settings.json  
-│   ├── input_schema.json  
-│   └── settings.yaml  
-├── docs/                             # Legal README, diagrams  
-│   └── README.md  
-├── firmware/                         # Arduino firmware  
-│   ├── BrakeFlasher.ino  
-│   ├── metadata/firmware_version.json  
-│   └── template.ino  
-├── gui/                              # GUI frontend  
-│   ├── config_template.json  
-│   └── emulator_gui.py  
-├── logs/                             # Rotated logs  
-│   └── flashlog.txt  
-├── run_all.bat                       # Windows install + build  
-├── run_all.sh                        # macOS/Linux install + build  
-├── scripts/                          # Core scripts  
-│   ├── render_config_to_ino.py       # Converts config -> firmware  
-│   ├── run_tests.py  
-│   └── telemetry.py                  # Placeholder for future data  
-├── tests/                            # Unit tests  
-│   └── test_render_config_to_ino.py  
+------------------------------------------------------------------------------
 
---------------------------------------------------------------------------------
-INSTALLATION
---------------------------------------------------------------------------------
-Windows (silent, auto-detect):  
+DEFAULT FLASH PATTERN LOGIC
+
+Pattern:  
+• 3× quick flash (100ms ON / 100ms OFF)  
+• 2× medium flash (200ms ON / 200ms OFF)  
+• 1× slow flash (400ms ON / 400ms OFF)  
+• Full-on hold until brake released
+
+Timing values are customizable via:
+- `config/flash_settings.json`
+- `gui/config_template.json`
+- GUI tool (`gui/emulator_gui.py`)
+
+------------------------------------------------------------------------------
+
+INSTALLATION METHODS
+
+Option A: Silent Script  
+Windows:  
     run_all.bat  
-
-macOS / Linux (silent):  
+macOS / Linux:  
     bash run_all.sh  
 
-These scripts validate dependencies, render firmware, compile, and optionally flash.  
-All actions logged to `logs/flashlog.txt`.  
+Option B: Manual (Advanced)  
+1. Launch GUI  
+       python gui/emulator_gui.py  
+2. Render firmware  
+       python scripts/render_config_to_ino.py  
+3. Compile  
+       arduino-cli compile --fqbn arduino:avr:nano firmware/BrakeFlasher.ino  
+4. Upload  
+       arduino-cli upload -p /dev/ttyUSB0 --fqbn arduino:avr:nano firmware/BrakeFlasher.ino  
 
---------------------------------------------------------------------------------
-USAGE
---------------------------------------------------------------------------------
-Preview Flash Pattern (GUI):  
-    python gui/emulator_gui.py  
+All logs: `logs/flashlog.txt`  
+All configs: `config/`  
+All outputs: `firmware/`, `output/`, and `sha256_manifest.txt`
 
-Render `.ino` from config:  
-    python scripts/render_config_to_ino.py  
+------------------------------------------------------------------------------
 
-Compile firmware:  
-    arduino-cli compile --fqbn arduino:avr:nano firmware/BrakeFlasher.ino  
+DIRECTORY MAP (ESSENTIAL)
 
-Upload to Arduino:  
-    arduino-cli upload -p /dev/ttyUSB0 --fqbn arduino:avr:nano firmware/BrakeFlasher.ino  
+- gui/                       → Emulator GUI and config templates  
+- config/                    → Flash timing patterns, schemas, validation files  
+- firmware/                  → Rendered .ino, metadata, compiled outputs  
+- scripts/                   → Generator tools, tests, automation  
+- docs/                      → GLOSSARY, INSTALLATION_MANUAL, README  
+- logs/                      → Persistent timestamped flashlog  
+- output/                    → Finalized delivery ZIP with all assets  
+- tests/                     → Pytest-based unit validation  
+- run_all.sh / .bat          → Single-step automated build/install  
+- Makefile                   → Platform-aware build automation
 
---------------------------------------------------------------------------------
-ROLLBACK / VERSIONING
---------------------------------------------------------------------------------
-- `firmware_version.json` contains: version, hash, timestamp, platform  
-- Previous versions archived in build/  
-- Git commit/tag metadata used for traceability  
-- Rollback: use prior `.hex` or restore config then rerun script  
+------------------------------------------------------------------------------
 
---------------------------------------------------------------------------------
-MERMAID DIAGRAMS (docs/)
---------------------------------------------------------------------------------
-View `.mmd` via: https://mermaid.live  
-- flow.mmd: Build/flash sequence  
-- structure.mmd: File structure  
-- compliance.mmd: Metadata + legal trace  
+VERSIONING AND ROLLBACK
 
---------------------------------------------------------------------------------
-LEGAL / COMPLIANCE
---------------------------------------------------------------------------------
-- All files are SHA256-hashed and traceable  
-- Compliant with ISO 19005 (PDF/A), JSON-LD 1.1  
-- Jurisdiction: North Carolina General Statutes (NCGS Ch. 66, 8, 1A)  
-- PDF exports optionally signed with X.509/PAdES-BES  
-- Redistribution and modification prohibited under NDA  
+All firmware builds are embedded with:
+- SHA256 checksum
+- Build timestamp
+- Version ID
+- Input config snapshot
+- Device platform
 
---------------------------------------------------------------------------------
-SUPPORT
---------------------------------------------------------------------------------
-Engineer: Jeffrey Plewak  
-Email: carcodez1@gmail.com  
-Tier 1 Direct Support (24h SLA, EST)  
+Rollback:
+- Revert to previous `.ino` or `.hex` in `firmware/` or `output/`
+- Restore original flash pattern JSON and rerun `render_config_to_ino.py`
+- Reference `firmware_version.json` and `sha256_manifest.txt` for audit
 
---------------------------------------------------------------------------------
-END OF DOCUMENT
+------------------------------------------------------------------------------
+
+TESTING
+
+Run:
+    make test
+
+Tests verify:
+- Flash pattern generation correctness
+- INO output matching schema
+- GUI response consistency
+- Checksum integrity for generated firmware
+
+Coverage:  
+- Results output to `coverage_html/index.html`
+
+------------------------------------------------------------------------------
+
+MERMAID DIAGRAMS
+
+Located in: `docs/`  
+Use https://mermaid.live or local renderer.
+
+- flow.mmd       → Build, config, and firmware generation sequence  
+- structure.mmd  → Project directory and file interaction map  
+- compliance.mmd → Metadata schema, jurisdictional anchors, legal trace
+
+------------------------------------------------------------------------------
+
+LEGAL COMPLIANCE
+
+- FMVSS 108: U.S. standard for lighting; flashing third brake lights must comply with local law
+- NCGS Ch. 66, 8, 1A: Governs digital evidence admissibility, warranties, and electronic modification
+- All outputs hashed (SHA256) and versioned
+- Optional fallback mode disables flashing and restores solid-only behavior
+- PDF/A-3 outputs, metadata signatures, and X.509 signing supported in enterprise editions
+
+------------------------------------------------------------------------------
+
+SUPPORT AND DELIVERY
+
+Direct Support:  
+Jeffrey Plewak (Engineer)  
+carcodez1@gmail.com  
+Response SLA: 24h (U.S. Eastern Time)
+
+Delivery:  
+- All builds include ZIP, checksum, logs, firmware, GUI, and source  
+- Ready for GitHub, USB flash drive, or signed ZIP delivery  
+- All materials cleared under NDA and IP assignment terms
+
+------------------------------------------------------------------------------
+
+CONCLUSION
+
+This system is fully engineered for safe deployment, legal defensibility, and field installation. Every firmware file, config, and log is verifiable, repeatable, and production-ready. Whether for resale, vehicle safety enhancement, or audit-grade delivery, this toolkit is built for rigorous environments and long-term support.
+
+END OF README

@@ -14,7 +14,7 @@ BUILD_DIR="build"
 DIST_DIR="$BUILD_DIR/dist"
 ARTIFACTS_DIR="$BUILD_DIR/artifacts"
 EXE_NAME="BrakeFlasherEmulator"
-SPEC_FILE="BrakeFlasherEmulator.spec"
+SPEC_FILE="BrakeFLasherEmulator.spec"
 LOG_FILE="$BUILD_DIR/build.log"
 HEX_FILE="$ARTIFACTS_DIR/BrakeFlasher.hex"
 TS=$(date +"%Y%m%d_%H%M%S")
@@ -73,11 +73,21 @@ for pkg in "${REQUIRED_MODULES[@]}"; do
     log "✓ $pkg present"
   fi
 done
+echo "[*] Running tests..."
+if [[ -f scripts/run_tests.py ]]; then
+  python3 scripts/run_tests.py
+  status=$?
+  if [[ $status -ne 0 ]]; then
+    echo "[✗] Unit tests failed. See HTML or terminal output above."
+    exit $status
+  else
+    echo "[✓] All unit tests passed ✔"
+  fi
+else
+  echo "[!] Test runner not found: scripts/run_tests.py"
+  echo "[ℹ] Skipping tests. Run manually with: python3 -m pytest tests"
+fi
 
-# -------- TEST RUN --------
-log "Running tests..."
-$PYTHON run_tests.py >> "$LOG_FILE" 2>&1 || fatal "Tests failed"
-log "✓ Tests passed"
 
 # -------- BUILD GUI --------
 log "Building GUI binary with PyInstaller..."

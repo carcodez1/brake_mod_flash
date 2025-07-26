@@ -1,0 +1,105 @@
+.
+├── LICENSE
+├── Makefile
+├── build_gui.sh
+├── build_release.sh
+├── clean_and_buils.sh
+├── config
+│   ├── flash_settings.json
+│   ├── input_schema.json
+│   └── settings.yaml
+├── coverage.xml
+├── coverage_html
+│   ├── class_index.html
+│   ├── coverage_html_cb_6fb7b396.js
+│   ├── favicon_32_cb_58284776.png
+│   ├── function_index.html
+│   ├── index.html
+│   ├── keybd_closed_cb_ce680311.png
+│   ├── status.json
+│   ├── style_cb_6b508a39.css
+│   └── z_de1a740d5dc98ffd_render_config_to_ino_py.html
+├── coverage_json
+│   └── coverage.json
+├── docs
+│   ├── GLOSSARY
+│   ├── INSTALLATION_MANUAL
+│   └── README.md
+├── firmware
+│   ├── metadata
+│   │   └── sha256_manifest.txt
+│   └── template.ino
+├── gui
+│   ├── assets
+│   │   └── icon.ico
+│   ├── config_template.json
+│   ├── emulator_gui.py
+│   └── state
+├── logs
+│   └── flashlog.txt
+├── output
+│   ├── BrakeFlasher_PRO_v1.0.1
+│   │   ├── LICENSE
+│   │   ├── LICENSE:Zone.Identifier
+│   │   ├── build
+│   │   │   ├── artifacts
+│   │   │   ├── brake_flasher_default.hex
+│   │   │   ├── brake_flasher_default.hex:Zone.Identifier
+│   │   │   ├── build.log
+│   │   │   ├── build.log:Zone.Identifier
+│   │   │   └── dist
+│   │   ├── config
+│   │   │   ├── flash_settings.json
+│   │   │   ├── flash_settings.json:Zone.Identifier
+│   │   │   ├── input_schema.json
+│   │   │   ├── input_schema.json:Zone.Identifier
+│   │   │   ├── settings.yaml
+│   │   │   └── settings.yaml:Zone.Identifier
+│   │   ├── docs
+│   │   │   ├── README.md
+│   │   │   └── README.md:Zone.Identifier
+│   │   ├── firmware
+│   │   │   ├── BrakeFlasher.ino
+│   │   │   ├── BrakeFlasher.ino:Zone.Identifier
+│   │   │   ├── metadata
+│   │   │   │   ├── firmware_version.json
+│   │   │   │   ├── firmware_version.json:Zone.Identifier
+│   │   │   │   ├── sha256_manifest.txt
+│   │   │   │   └── sha256_manifest.txt:Zone.Identifier
+│   │   │   ├── template.ino
+│   │   │   └── template.ino:Zone.Identifier
+│   │   ├── gui
+│   │   │   ├── config_template.json
+│   │   │   ├── config_template.json:Zone.Identifier
+│   │   │   ├── emulator_gui.py
+│   │   │   └── emulator_gui.py:Zone.Identifier
+│   │   ├── logs
+│   │   │   ├── flashlog.txt
+│   │   │   └── flashlog.txt:Zone.Identifier
+│   │   ├── run_all.bat
+│   │   ├── run_all.bat:Zone.Identifier
+│   │   ├── run_all.sh
+│   │   ├── run_all.sh:Zone.Identifier
+│   │   └── scripts
+│   │       ├── render_config_to_ino.py
+│   │       ├── render_config_to_ino.py:Zone.Identifier
+│   │       ├── run_tests.py
+│   │       ├── run_tests.py:Zone.Identifier
+│   │       ├── telemetry.py
+│   │       └── telemetry.py:Zone.Identifier
+│   └── BrakeFlasher_PRO_v1.0.1.zip
+├── requirements.txt
+├── run_all.bat
+├── run_all.sh
+├── scripts
+│   ├── bootstrap_flash.sh
+│   ├── install_tkinter_support.sh
+│   ├── render_config_to_ino.py
+│   ├── run_tests.py
+│   └── telemetry.py
+├── sha256_manifest.txt
+├── tests
+│   └── test_render_config_to_ino.py
+└── tree
+
+24 directories, 78 files
