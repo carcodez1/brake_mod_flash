@@ -1,0 +1,17 @@
+# Core dependencies
+pyserial==3.5
+jsonschema==4.21.1
+pydantic==2.7.1
+python-dateutil==2.9.0.post0
+
+# GUI + emulator
+tk==0.1.0
+matplotlib==3.9.0
+
+# Testing
+pytest==8.2.1
+pytest-cov==6.2.1
+mock==5.2.0
+
+# Optional (for future extensions)
+pyyaml==6.0.1

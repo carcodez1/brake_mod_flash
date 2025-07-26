@@ -1,0 +1,5 @@
+version: "1.0.1"
+config_id: "default-flash-v1"
+config_path: "gui/config_template.json"
+log_dir: "gui/logs"
+scenario_dir: "gui/saved_configs"
