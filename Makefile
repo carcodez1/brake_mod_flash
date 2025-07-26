@@ -1,9 +1,11 @@
-# Makefile – Brake Light Flasher Toolkit (Enterprise Grade)
+# Makefile – Brake Light Flasher Toolkit (Enterprise Grade – PLE)
 # Version: 1.2.3
 # Author: Jeffrey Plewak
 # License: Proprietary – NDA / IP Assignment
-# Targets: Windows (Git Bash / WSL2), macOS (Intel/Apple Silicon), Linux (Debian/Ubuntu)
+# Platforms: Windows (Git Bash / WSL2), macOS (Intel/Apple Silicon), Linux (Debian/Ubuntu)
 
+# ----------------------------------------------------------------------
+# PLATFORM-AWARE PYTHON ENV
 ifeq ($(OS),Windows_NT)
 	PYTHON := python
 	PIP := .venv/Scripts/pip.exe
@@ -16,138 +18,153 @@ else
 	SHELL := /bin/bash
 endif
 
-# Paths and filenames
+# ----------------------------------------------------------------------
+# DEFINITIONS
 VENV_DIR := .venv
 GUI_SCRIPT := gui/emulator_gui.py
 FIRMWARE_SCRIPT := scripts/render_config_to_ino.py
 PYI_SPEC := gui/BrakeFLashEmulator.spec
 OUTPUT_DIR := dist
 FIRMWARE_OUT := firmware/BrakeFlasher.ino
-METADATA_OUT := firmware/metadata/firmware_version.json
 HASH_OUT := firmware/metadata/firmware_hash.txt
 FINAL_ZIP := output/BrakeFlasher_PRO_v1.2.3.zip
 
 # ----------------------------------------------------------------------
-# Complete Build Pipeline
+# FULL BUILD CHAIN
 all: install-deps gui firmware package checksum zip
 
 # ----------------------------------------------------------------------
-# Virtual Environment Setup
+# VENV SETUP
 venv:
 	@uname -a || ver
 	@if [ ! -d "$(VENV_DIR)" ]; then \
 		$(PYTHON) -m venv $(VENV_DIR); \
 	fi
-	@echo "Virtual environment is ready."
+	@echo "Virtual environment ready."
 
 # ----------------------------------------------------------------------
-# Dependency Installation
+# DEPENDENCY INSTALL
 install-deps: venv
-	@echo "Installing required Python packages..."
+	@echo "[*] Installing required packages..."
 	@$(PIP) install --upgrade pip
-	@$(PIP) install -r requirements.txt pyinstaller
-	@echo "Dependencies installation complete."
+	@$(PIP) install -r requirements.txt jinja2 pyinstaller
+	@echo "[✓] Dependencies ready."
 
 # ----------------------------------------------------------------------
-# Launch Emulator GUI
+# GUI EMULATOR
 gui:
 	@$(PY) $(GUI_SCRIPT)
 
 # ----------------------------------------------------------------------
-# Generate Firmware (.ino) from Config
+# RENDER .INO FROM CONFIG
 firmware:
-	@echo "Generating Arduino firmware from config..."
+	@echo "[*] Rendering firmware..."
 	@$(PY) $(FIRMWARE_SCRIPT)
-	@if [ ! -f "$(FIRMWARE_OUT)" ]; then echo "Firmware generation failed. Missing: $(FIRMWARE_OUT)"; exit 1; fi
-	@echo "Firmware output: $(FIRMWARE_OUT)"
+	@if [ ! -f "$(FIRMWARE_OUT)" ]; then echo "[✗] Firmware generation failed."; exit 1; fi
+	@echo "[✓] Firmware: $(FIRMWARE_OUT)"
 
 # ----------------------------------------------------------------------
-# Build GUI Executable with PyInstaller
+# COMPILE GUI
 package:
-	@echo "Compiling GUI binary..."
+	@echo "[*] Building GUI binary..."
 	@mkdir -p $(OUTPUT_DIR)
-	@if ! command -v $(PY) > /dev/null; then \
-		echo "Python interpreter not found."; exit 1; \
-	fi
-	@$(PY) -m PyInstaller $(PYI_SPEC) || { echo "PyInstaller build failed."; exit 1; }
+	@$(PY) -m PyInstaller $(PYI_SPEC) || { echo "[✗] PyInstaller failed."; exit 1; }
 	@if [ ! -f "$(OUTPUT_DIR)/BrakeFLashEmulator" ] && [ ! -f "$(OUTPUT_DIR)/BrakeFLashEmulator.exe" ]; then \
-		echo "Binary output not found after build."; exit 1; \
-	fi
-	@echo "GUI binary successfully created in $(OUTPUT_DIR)/"
+		echo "[✗] Build failed. Binary not found."; exit 1; fi
+	@echo "[✓] GUI binary created."
 
 # ----------------------------------------------------------------------
-# SHA256 Hashing of Firmware Output
+# GENERATE CHECKSUM
 checksum:
-	@echo "Computing firmware SHA256 hash..."
+	@echo "[*] Computing SHA256 hash..."
 	@mkdir -p firmware/metadata
 	@$(PY) -c "import hashlib; f=open('$(FIRMWARE_OUT)','rb'); print(hashlib.sha256(f.read()).hexdigest())" > $(HASH_OUT)
-	@echo "Hash saved to: $(HASH_OUT)"
+	@echo "[✓] Hash saved: $(HASH_OUT)"
 
 # ----------------------------------------------------------------------
-# Run Unit Tests
+# TEST SUITE
 test:
 	@$(PY) -m pytest --cov=.
 
 # ----------------------------------------------------------------------
-# Clean All Build Artifacts
+# CLEAN ALL
 clean:
-	@echo "[*] Cleaning build environment..."
-	@deactivate 2>/dev/null || true
+	@echo "[*] Cleaning artifacts..."
 	@rm -rf .venv build dist __pycache__ .pytest_cache
 	@rm -rf gui/__pycache__ gui/state/*
-	@rm -f logs/flash.log
+	@rm -f logs/*.log
 	@rm -f firmware/*.ino firmware/metadata/*.json
 	@echo "[✓] Clean complete."
 
 # ----------------------------------------------------------------------
-# Full Rebuild from Scratch
+# FULL REBUILD
 rebuild: clean all
 
 # ----------------------------------------------------------------------
-# Upload Firmware to Arduino Nano
-# Ensure CLI is installed before flashing
+# FLASH TO ARDUINO
 flash:
 	@command -v arduino-cli >/dev/null || (echo "[✗] arduino-cli not found. Run: bash scripts/bootstrap_flash.sh" && exit 127)
-	@echo "[*] Flashing firmware to Arduino Nano..."
+	@echo "[*] Flashing Arduino Nano..."
 	arduino-cli upload -p /dev/ttyUSB0 --fqbn arduino:avr:nano firmware/BrakeFlasher.ino --verify --log-level info \
-	|| (echo "[✗] Upload failed – check board, port, or firmware" && exit 1)
+	|| (echo "[✗] Flash failed – check USB/port/board." && exit 1)
 
 # ----------------------------------------------------------------------
-# Archive Final Delivery Package
+# CREATE FINAL ZIP
 zip:
 	@mkdir -p output
 	@zip -r $(FINAL_ZIP) firmware gui docs config scripts run_all.* LICENSE requirements.txt
-	@echo "ZIP archive created at: $(FINAL_ZIP)"
+	@echo "[✓] ZIP created: $(FINAL_ZIP)"
 
 # ----------------------------------------------------------------------
-# Delivery Confirmation Output
+# DELIVERY STAGE
 delivery: zip
 	@echo ""
-	@echo "Final Delivery Artifact:"
-	@echo "  Archive Path: $(FINAL_ZIP)"
-	@echo "  Contents: firmware, GUI, config, docs, scripts, install files"
-	@echo "  Transfer Method: Notion, secure email, or customer upload"
-	@echo "Delivery build is complete."
+	@echo "Delivery Artifact:"
+	@echo "  Archive: $(FINAL_ZIP)"
+	@echo "  Contents: firmware, GUI, config, docs, scripts"
+	@echo "  Delivery via: Notion, secure email, or direct upload"
+	@echo "[✓] Delivery complete."
 
 # ----------------------------------------------------------------------
-# Display Help
+# VEHICLE-SPECIFIC BUILD
+vehicle:
+	@mkdir -p firmware/binaries firmware/metadata/per_customer/$(CUSTOMER)
+	@$(PY) scripts/render_config_to_ino.py \
+		--input config/vehicles/$(VEHICLE).json \
+		--template templates/BrakeFlasher.ino.j2 \
+		--output firmware/binaries/$(VEHICLE).ino \
+		--meta firmware/metadata/per_customer/$(CUSTOMER)/firmware_version.json \
+		--board $(BOARD) \
+		--customer_id $(CUSTOMER)
+
+# ----------------------------------------------------------------------
+# RENDER ALL VEHICLES
+render-all:
+	@for v in kia_optima_2019 nissan_altima_2021 hyundai_elantra_2018 kia_sorento_2022 genesis_g80_2023; do \
+		make vehicle VEHICLE=$$v CUSTOMER=cust_$$v BOARD=nano; \
+	done
+
+# ----------------------------------------------------------------------
+# HELP MENU
 help:
 	@echo ""
-	@echo "Brake Light Flasher Toolkit – Makefile Targets"
+	@echo "Brake Light Flasher Toolkit – PLE Makefile Targets"
 	@echo "--------------------------------------------------"
-	@echo "  make venv         - Create virtual environment"
-	@echo "  make install-deps - Install dependencies"
-	@echo "  make gui          - Launch emulator GUI"
-	@echo "  make firmware     - Generate Arduino .ino file"
-	@echo "  make package      - Build GUI binary (PyInstaller)"
-	@echo "  make checksum     - Generate SHA256 of firmware"
-	@echo "  make flash        - Upload firmware to Arduino Nano"
-	@echo "  make zip          - Create delivery ZIP package"
-	@echo "  make delivery     - Full archive for client delivery"
-	@echo "  make test         - Run tests with coverage"
-	@echo "  make clean        - Remove build artifacts"
-	@echo "  make rebuild      - Clean and rebuild everything"
-	@echo "  make help         - Display this help menu"
+	@echo "  make venv          - Setup Python virtualenv"
+	@echo "  make install-deps  - Install dependencies"
+	@echo "  make gui           - Run GUI emulator"
+	@echo "  make firmware      - Render .ino firmware"
+	@echo "  make package       - Build GUI binary"
+	@echo "  make checksum      - Hash firmware"
+	@echo "  make flash         - Flash Arduino Nano"
+	@echo "  make zip           - Package delivery ZIP"
+	@echo "  make delivery      - Full delivery pipeline"
+	@echo "  make test          - Run unit tests"
+	@echo "  make clean         - Clean build artifacts"
+	@echo "  make rebuild       - Rebuild entire project"
+	@echo "  make vehicle       - Build per-vehicle (VEHICLE, CUSTOMER, BOARD)"
+	@echo "  make render-all    - Build all preset vehicles"
+	@echo "  make help          - Show this help menu"
 	@echo ""
 
-.PHONY: all venv install-deps gui firmware package checksum test clean rebuild flash zip delivery help
+.PHONY: all venv install-deps gui firmware package checksum test clean rebuild flash zip delivery vehicle render-all help

@@ -1,0 +1,23 @@
+// Auto-generated from Jinja2 template
+// Vehicle: {{ vehicle }}
+// Year: {{ year }}
+const int inputPin = 3;
+const int outputPin = 4;
+
+void setup() {
+  pinMode(inputPin, INPUT);
+  pinMode(outputPin, OUTPUT);
+}
+
+void loop() {
+  if (digitalRead(inputPin) == HIGH) {
+    {% for step in pattern %}
+    for (int i = 0; i < {{ step.count }}; i++) {
+      digitalWrite(outputPin, HIGH);
+      delay({{ step.on }});
+      digitalWrite(outputPin, LOW);
+      delay({{ step.off }});
+    }
+    {% endfor %}
+  }
+}
