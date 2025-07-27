@@ -1,5 +1,6 @@
-# emulator_gui.py
-# Production Brake Pattern Emulator with Absolute Paths + YAML Config + Schema Validation
+#!/usr/bin/env python3
+# File: gui/emulator_gui.py
+# Hardened Production GUI – Brake Pattern Emulator
 # Author: Jeffrey Plewak
 # License: Proprietary – NDA / IP Assigned
 # Version: loaded from settings.yaml
@@ -16,18 +17,18 @@ from datetime import datetime
 from threading import Thread
 import time
 import argparse
+import stat
 from jsonschema import validate, ValidationError
 
-# Load YAML settings
+# ─────────────────────────────────────────────────────────────
+# SETUP PATHS
+# ─────────────────────────────────────────────────────────────
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 SETTINGS_PATH = os.path.join(ROOT_DIR, "../config/settings.yaml")
 SCHEMA_PATH = os.path.join(ROOT_DIR, "../config/input_schema.json")
 
 with open(SETTINGS_PATH, "r") as f:
     SETTINGS = yaml.safe_load(f)
-
-with open(SCHEMA_PATH, "r") as f:
-    SCHEMA = json.load(f)
 
 APP_VERSION = SETTINGS["version"]
 CONFIG_ID = SETTINGS["config_id"]
@@ -36,11 +37,23 @@ LOG_DIR = os.path.abspath(os.path.join(ROOT_DIR, "../" + SETTINGS["log_dir"]))
 SCENARIO_DIR = os.path.abspath(os.path.join(ROOT_DIR, "../" + SETTINGS["scenario_dir"]))
 DELAY_CAP_MS = 2000
 
-# Ensure paths exist
+# ─────────────────────────────────────────────────────────────
+# VALIDATE ACCESS + CREATE DIRS
+# ─────────────────────────────────────────────────────────────
+def check_path_access(path):
+    if not os.access(path, os.W_OK):
+        logging.warning(f"Write access denied: {path}")
+    st = os.stat(path)
+    logging.debug(f"Permissions for {path}: {oct(st.st_mode)}")
+
 os.makedirs(LOG_DIR, exist_ok=True)
 os.makedirs(SCENARIO_DIR, exist_ok=True)
+check_path_access(LOG_DIR)
+check_path_access(SCENARIO_DIR)
 
-# Rolling log setup
+# ─────────────────────────────────────────────────────────────
+# LOGGING
+# ─────────────────────────────────────────────────────────────
 LOG_FILE = os.path.join(LOG_DIR, f"{datetime.today().strftime('%Y-%m-%d')}.log")
 logging.basicConfig(
     filename=LOG_FILE,
@@ -49,6 +62,9 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S"
 )
 
+# ─────────────────────────────────────────────────────────────
+# GUI CLASS
+# ─────────────────────────────────────────────────────────────
 class FlashEmulatorGUI:
     def __init__(self, master):
         self.master = master
@@ -64,10 +80,10 @@ class FlashEmulatorGUI:
         btn_frame = ttk.Frame(master)
         btn_frame.pack(pady=10)
 
-        ttk.Button(btn_frame, text="▶ Run Pattern", command=self.run_pattern).grid(row=0, column=0, padx=5)
-        ttk.Button(btn_frame, text="⟳ Reload Config", command=self.reload_config).grid(row=0, column=1, padx=5)
-        ttk.Button(btn_frame, text="💾 Save Scenario", command=self.save_scenario).grid(row=0, column=2, padx=5)
-        ttk.Button(btn_frame, text="📤 Export Trace", command=self.export_event_trace).grid(row=0, column=3, padx=5)
+        ttk.Button(btn_frame, text="Run Pattern", command=self.run_pattern).grid(row=0, column=0, padx=5)
+        ttk.Button(btn_frame, text="Reload Config", command=self.reload_config).grid(row=0, column=1, padx=5)
+        ttk.Button(btn_frame, text="Save Scenario", command=self.save_scenario).grid(row=0, column=2, padx=5)
+        ttk.Button(btn_frame, text="Export Trace", command=self.export_event_trace).grid(row=0, column=3, padx=5)
 
         self.status_var = tk.StringVar(value="Idle")
         ttk.Label(master, textvariable=self.status_var).pack()
@@ -81,7 +97,7 @@ class FlashEmulatorGUI:
         try:
             with open(path, "r") as f:
                 cfg = json.load(f)
-            validate(instance=cfg, schema=SCHEMA)
+            validate(instance=cfg, schema=self._load_schema())
             pattern = cfg["pattern"]
             logging.info(f"Loaded config: {path}")
             return pattern
@@ -89,6 +105,10 @@ class FlashEmulatorGUI:
             logging.error(f"Invalid config: {e}")
             messagebox.showerror("Validation Error", f"Config failed schema validation:\n{e}")
             return []
+
+    def _load_schema(self):
+        with open(SCHEMA_PATH, "r") as f:
+            return json.load(f)
 
     def reload_config(self):
         self.pattern = self.load_config(CONFIG_PATH)
@@ -152,15 +172,24 @@ class FlashEmulatorGUI:
     def export_event_trace(self):
         now = datetime.utcnow().strftime("%Y%m%dT%H%M%S")
         path = os.path.join(LOG_DIR, f"event_trace_{now}.json")
+        trace_data = {
+            "version": APP_VERSION,
+            "config_id": CONFIG_ID,
+            "generated": datetime.utcnow().isoformat() + "Z",
+            "trace": self.event_log
+        }
         with open(path, "w") as f:
-            json.dump(self.event_log, f, indent=2)
+            json.dump(trace_data, f, indent=2)
         logging.info(f"Trace exported: {path}")
 
+# ─────────────────────────────────────────────────────────────
+# CLI ENTRY
+# ─────────────────────────────────────────────────────────────
 def run_headless():
     try:
         with open(CONFIG_PATH, "r") as f:
             cfg = json.load(f)
-        validate(instance=cfg, schema=SCHEMA)
+        validate(instance=cfg, schema=json.load(open(SCHEMA_PATH)))
         pattern = cfg["pattern"]
         for step in pattern:
             count = step.get("count", 1)

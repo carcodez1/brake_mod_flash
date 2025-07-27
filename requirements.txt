@@ -1,18 +1,22 @@
+# ───────────────────────────────────────────
 # Core dependencies
 pyserial==3.5
 jsonschema==4.21.1
 pydantic==2.7.1
 python-dateutil==2.9.0.post0
+pyyaml==6.0.1  # Used in GUI/emulator
+jinja2==3.1.2  # For .ino template rendering
 
-# GUI + emulator
-tk==0.1.0
-matplotlib==3.9.0
+# ───────────────────────────────────────────
+# GUI emulator
+matplotlib==3.7.5
 
-# Testing
+# ───────────────────────────────────────────
+# Testing (CI/CD)
 pytest==8.2.1
-pytest-cov==6.2.1
-mock==5.2.0
+pytest-cov==4.1.0
+# mock==5.2.0  # Use only if Python <3.3, otherwise use unittest.mock
 
-# Optional (for future extensions)
-pyyaml==6.0.1
-jinja2>=3.1.2
+# ───────────────────────────────────────────
+# Packaging
+pyinstaller==6.6.0  # Lock version for deterministic builds

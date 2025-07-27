@@ -1,10 +1,12 @@
-
 #!/bin/bash
-# build_release.sh - Final hardened release builder for BrakeFlasher PRO v1.0.1
+# File: scripts/build_release.sh
 # Author: Jeffrey Plewak
-# Purpose: Local, silent, cross-platform-safe release packaging
+# Version: v1.0.1
+# Purpose: Hardened release packager for BrakeFlasher PRO
+# License: Proprietary – NDA/IP Assignment
 
 set -euo pipefail
+IFS=$'\n\t'
 
 VERSION="v1.0.1"
 OUTDIR="output"
@@ -15,13 +17,12 @@ TEST_SCRIPT="scripts/run_tests.py"
 
 echo "────────────────────────────────────────────────────────────"
 echo "🔧 [1/6] Preparing directories..."
-mkdir -p "$OUTDIR"
-mkdir -p "$METADIR"
+mkdir -p "$OUTDIR" "$METADIR"
 
 echo "🧹 [2/6] Cleaning old artifacts..."
 rm -f "$ZIPFILE" "$MANIFEST"
 
-echo "🧪 [3/6] Running tests..."
+echo "🧪 [3/6] Running test suite..."
 if [[ -f "$TEST_SCRIPT" ]]; then
     python3 "$TEST_SCRIPT" || { echo "✗ Tests failed. Aborting."; exit 1; }
 else
@@ -35,9 +36,11 @@ find . \
   ! -path "./tests/*" \
   ! -path "./output/*" \
   ! -name "*.DS_Store" \
+  ! -name "*.pyc" \
+  ! -path "*/__pycache__/*" \
   -exec sha256sum {} \; | sort > "$MANIFEST"
 
-echo "📦 [5/6] Creating ZIP archive..."
+echo "📦 [5/6] Creating ZIP archive: $ZIPFILE"
 zip -r "$ZIPFILE" \
   build/ \
   config/ \
@@ -51,7 +54,7 @@ zip -r "$ZIPFILE" \
   LICENSE \
   -x "*.DS_Store" "*.pyc" "__pycache__/*" ".git/*" "tests/*"
 
-echo "🔐 [6/6] Verifying ZIP and recording hash..."
+echo "🔐 [6/6] Verifying archive integrity and recording hash..."
 sha256sum "$ZIPFILE" >> "$MANIFEST"
 unzip -t "$ZIPFILE" > /dev/null
 

@@ -1,30 +1,32 @@
 #!/usr/bin/env bash
-
-# clean_and_build_gui.sh
-# Cleans build artifacts and rebuilds BrakeFlasher GUI with correct PyYAML handling
+# File: scripts/clean_and_build_gui.sh
 # Author: Jeffrey Plewak
 # Version: 1.0.1
+# Purpose: Clean and rebuild BrakeFlasher GUI safely with PyInstaller + YAML check
+# License: Proprietary – NDA/IP Assignment
 
 set -euo pipefail
+IFS=$'\n\t'
 
-echo "[*] Cleaning old build artifacts..."
-rm -rf build/ dist/ __pycache__/
+echo "────────────────────────────────────────────"
+echo "🧹 Cleaning old GUI build artifacts..."
+rm -rf build/ dist/ __pycache__/ .pytest_cache/
 find . -name '*.spec' -delete
 find . -name '*.pyc' -delete
 find . -name '*.pyo' -delete
 find . -type d -name '__pycache__' -exec rm -rf {} +
 
-echo "[*] Validating YAML import..."
+echo "🔍 Validating YAML import statement..."
 if grep -q "import pyyaml" gui/emulator_gui.py; then
-  echo "[✗] ERROR: Invalid import 'import pyyaml' found. Removing..."
+  echo "[✗] Invalid import: 'import pyyaml' found – patching..."
   sed -i.bak '/import pyyaml/d' gui/emulator_gui.py
   rm -f gui/emulator_gui.py.bak
-  echo "[✓] Fixed invalid import."
+  echo "[✓] Removed incorrect PyYAML import."
 else
-  echo "[✓] YAML import is clean."
+  echo "[✓] No invalid 'pyyaml' import found."
 fi
 
-echo "[*] Rebuilding GUI binary with PyInstaller..."
+echo "🛠  Rebuilding GUI binary with PyInstaller..."
 pyinstaller gui/emulator_gui.py \
   --onefile \
   --noconfirm \
@@ -39,4 +41,3 @@ echo "📦 Binary: dist/BrakeFLashEmulator"
 echo "📁 Build:  build/"
 echo "🔧 Icon:   gui/assets/icon.ico"
 echo "────────────────────────────────────────────"
-

@@ -1,39 +1,66 @@
-import zipfile, os, sys, json
-from pathlib import Path
+#!/usr/bin/env python3
+# File: scripts/delivery.py
+# Purpose: Package finalized firmware output folders into delivery ZIPs
+# Author: Jeffrey Plewak
+# License: Proprietary – NDA/IP Assignment
+# Version: 2.0.0
+
+import os
+import zipfile
+import hashlib
 from datetime import datetime
+from pathlib import Path
 
-def make_zip(customer_id, vehicle_file):
-    base = vehicle_file.replace(".json", "")
-    bin_path = f"firmware/binaries/{base}.ino"
-    meta_path = f"firmware/metadata/per_customer/{customer_id}/firmware_version.json"
-    out_path = f"delivery/{customer_id}_{base.replace('_','').title()}.zip"
-    log_path = f"firmware/metadata/per_customer/{customer_id}/delivery_log.json"
-    trace_log = "logs/delivery_trace.log"
+# ─────────────────────────────────────────────────────────────
+# CONFIGURATION
+# ─────────────────────────────────────────────────────────────
+ROOT = Path(__file__).resolve().parent.parent
+OUTPUT_DIR = ROOT / "output"
+ZIP_DIR = OUTPUT_DIR / "zips"
+MANIFEST_FILE = ROOT / "sha256_manifest.txt"
+INCLUDE_EXT = {".ino", ".hex", ".json"}
 
-    with zipfile.ZipFile(out_path, 'w') as z:
-        z.write(bin_path, os.path.basename(bin_path))
-        z.write(meta_path, os.path.basename(meta_path))
+timestamp = datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+ZIP_DIR.mkdir(parents=True, exist_ok=True)
+hash_entries = []
 
-    now = datetime.utcnow().isoformat() + "Z"
-    log_entry = {
-        "timestamp": now,
-        "customer_id": customer_id,
-        "vehicle": base,
-        "output_zip": out_path,
-        "files": [bin_path, meta_path]
-    }
-    # Update customer delivery log
-    existing = []
-    if Path(log_path).exists():
-        existing = json.loads(Path(log_path).read_text(encoding="utf-8"))
-    existing.append(log_entry)
-    Path(log_path).write_text(json.dumps(existing, indent=2), encoding="utf-8")
+print("────────────────────────────────────────────────────────────")
+print("DELIVERY PACKAGING")
+print(f"Output Root : {OUTPUT_DIR}")
+print(f"ZIP Output  : {ZIP_DIR}")
+print(f"Timestamp   : {timestamp}")
+print("────────────────────────────────────────────────────────────")
 
-    # Append to global trace log
-    with open(trace_log, "a", encoding="utf-8") as t:
-        t.write(json.dumps(log_entry) + "\n")
+# ─────────────────────────────────────────────────────────────
+# ZIP EACH VEHICLE FOLDER
+# ─────────────────────────────────────────────────────────────
+vehicles_zipped = 0
+for vehicle_dir in OUTPUT_DIR.iterdir():
+    if not vehicle_dir.is_dir() or vehicle_dir.name == "zips":
+        continue
 
-    print(f"[✓] Delivery package created: {out_path}")
+    archive_name = f"{vehicle_dir.name}_{timestamp}.zip"
+    zip_path = ZIP_DIR / archive_name
 
-if __name__ == "__main__":
-    make_zip(sys.argv[1], sys.argv[2])
+    with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for file_path in vehicle_dir.rglob("*"):
+            if file_path.suffix in INCLUDE_EXT:
+                arcname = file_path.relative_to(vehicle_dir)
+                zipf.write(file_path, arcname)
+
+    sha256 = hashlib.sha256(zip_path.read_bytes()).hexdigest()
+    hash_entries.append(f"{sha256}  {zip_path.name}")
+    vehicles_zipped += 1
+    print(f"[✓] Zipped: {zip_path.name}")
+
+# ─────────────────────────────────────────────────────────────
+# WRITE MANIFEST
+# ─────────────────────────────────────────────────────────────
+MANIFEST_FILE.write_text("\n".join(hash_entries) + "\n")
+print("────────────────────────────────────────────────────────────")
+print(f"ZIP Packages  : {vehicles_zipped}")
+print(f"Manifest File : {MANIFEST_FILE}")
+print("────────────────────────────────────────────────────────────")
+
+if vehicles_zipped == 0:
+    print("WARNING: No packages were created. Check output/ structure.")

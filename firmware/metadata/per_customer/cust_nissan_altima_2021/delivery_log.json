@@ -1,0 +1,16 @@
+usage: render_config_to_ino.py [-h] --input INPUT --template TEMPLATE --output
+                               OUTPUT --meta META [--board BOARD]
+                               --customer_id CUSTOMER_ID
+render_config_to_ino.py: error: the following arguments are required: --input, --template, --customer_id
+usage: render_config_to_ino.py [-h] --input INPUT --template TEMPLATE --output
+                               OUTPUT --meta META [--board BOARD]
+                               --customer_id CUSTOMER_ID
+render_config_to_ino.py: error: the following arguments are required: --input, --template, --customer_id
+usage: render_config_to_ino.py [-h] --input INPUT --template TEMPLATE --output
+                               OUTPUT --meta META [--board BOARD]
+                               --customer_id CUSTOMER_ID
+render_config_to_ino.py: error: the following arguments are required: --input, --template, --customer_id
+usage: render_config_to_ino.py [-h] --input INPUT --template TEMPLATE --output
+                               OUTPUT --meta META [--board BOARD]
+                               --customer_id CUSTOMER_ID
+render_config_to_ino.py: error: the following arguments are required: --input, --template, --customer_id
