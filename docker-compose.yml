@@ -1,0 +1,37 @@
+# docker-compose.yml – Hardened BrakeFlasher Toolkit Container (Production-Grade)
+# Author: Jeffrey Plewak
+# License: Proprietary – NDA/IP Assignment
+# Version: 1.2.1
+
+version: "3.8"
+
+services:
+  brakeflasher:
+    container_name: brakeflasher
+    build:
+      context: .
+      dockerfile: Dockerfile
+    privileged: true
+    devices:
+      - "/dev/ttyUSB0:/dev/ttyUSB0"
+    environment:
+      - DISPLAY=${DISPLAY}
+      - XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/tmp}
+      - PORT=${PORT:-/dev/ttyUSB0}
+      - FQBN=${FQBN:-arduino:avr:nano}
+    volumes:
+      - ./output:/app/output
+      - ./firmware:/app/firmware
+      - ./config:/app/config
+      - ./scripts:/app/scripts
+      - ~/.arduino15:/root/.arduino15
+    stdin_open: true
+    tty: true
+    network_mode: host
+    restart: "on-failure"
+    healthcheck:
+      test: ["CMD-SHELL", "test -e ${PORT:-/dev/ttyUSB0}"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    command: ["bash", "-c", "./scripts/check_usb.sh && ./scripts/flash_arduino.sh"]

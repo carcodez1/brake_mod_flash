@@ -1,130 +1,174 @@
-[
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareSourceCode",
-    "name": "BrakeFlasher Default Flash Config",
-    "version": "1.0.0",
-    "dateCreated": "2025-07-26T00:00:00Z",
-    "author": {
-      "@type": "Person",
-      "name": "Jeffrey Plewak",
-      "email": "carcodez1@gmail.com",
-      "jobTitle": "Principal Engineer",
-      "address": {
-        "@type": "PostalAddress",
-        "addressCountry": "US"
-      }
-    },
-    "programmingLanguage": "Arduino C++",
-    "description": "Brake light flasher pattern for Hyundai/Kia third brake light. Improves road safety by increasing visibility using timed digital output on an Arduino Nano.",
-    "softwareRequirements": {
-      "@type": "SoftwareApplication",
-      "name": "Arduino IDE",
-      "operatingSystem": "Cross-platform"
-    },
-    "applicationCategory": "Embedded Automotive Firmware",
-    "codeRepository": "NDA / IP Assigned – Private Repository",
-    "isAccessibleForFree": false
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Vehicle",
-    "manufacturer": {
-      "@type": "Organization",
-      "name": ["Hyundai", "Kia"]
-    },
-    "vehicleComponent": "Third brake light"
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "HowTo",
-    "name": "Brake Light Flash Pattern Execution",
-    "step": [
-      {
-        "@type": "HowToStep",
-        "name": "Step 1",
-        "itemListElement": {
-          "@type": "PropertyValue",
-          "name": "Digital Output Pattern",
-          "value": [
-            { "count": 3, "on": 100, "off": 100 },
-            { "count": 2, "on": 200, "off": 200 },
-            { "count": 1, "on": 400, "off": 400 }
-          ]
+{
+  "pattern": [
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareSourceCode",
+      "name": "BrakeFlasher Default Flash Config",
+      "version": "1.0.0",
+      "dateCreated": "2025-07-26T00:00:00Z",
+      "author": {
+        "@type": "Person",
+        "name": "Jeffrey Plewak",
+        "email": "carcodez1@gmail.com",
+        "jobTitle": "Principal Engineer",
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "US"
         }
+      },
+      "programmingLanguage": "Arduino C++",
+      "description": "Brake light flasher pattern for Hyundai/Kia third brake light. Improves road safety by increasing visibility using timed digital output on an Arduino Nano.",
+      "softwareRequirements": {
+        "@type": "SoftwareApplication",
+        "name": "Arduino IDE",
+        "operatingSystem": "Cross-platform"
+      },
+      "applicationCategory": "Embedded Automotive Firmware",
+      "codeRepository": "NDA / IP Assigned – Private Repository",
+      "isAccessibleForFree": false
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Vehicle",
+      "manufacturer": {
+        "@type": "Organization",
+        "name": [
+          "Hyundai",
+          "Kia"
+        ]
+      },
+      "vehicleComponent": "Third brake light"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "HowTo",
+      "name": "Brake Light Flash Pattern Execution",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "name": "Step 1",
+          "itemListElement": {
+            "@type": "PropertyValue",
+            "name": "Digital Output Pattern",
+            "value": [
+              {
+                "count": 3,
+                "on": 100,
+                "off": 100
+              },
+              {
+                "count": 2,
+                "on": 200,
+                "off": 200
+              },
+              {
+                "count": 1,
+                "on": 400,
+                "off": 400
+              }
+            ]
+          }
+        }
+      ],
+      "tool": {
+        "@type": "Product",
+        "name": "Arduino Nano",
+        "model": "ATmega328P",
+        "identifier": "Nano-AT328P",
+        "manufacturer": "Arduino.cc"
+      },
+      "performer": {
+        "@type": "Person",
+        "name": "Jeffrey Plewak",
+        "jobTitle": "Principal Engineer"
+      },
+      "instrument": {
+        "@type": "PropertyValue",
+        "name": "Input Pin",
+        "value": "D3"
+      },
+      "result": {
+        "@type": "PropertyValue",
+        "name": "Output Pin",
+        "value": "D4"
       }
-    ],
-    "tool": {
-      "@type": "Product",
-      "name": "Arduino Nano",
-      "model": "ATmega328P",
-      "identifier": "Nano-AT328P",
-      "manufacturer": "Arduino.cc"
     },
-    "performer": {
-      "@type": "Person",
-      "name": "Jeffrey Plewak",
-      "jobTitle": "Principal Engineer"
+    {
+      "@context": "https://schema.org",
+      "@type": "CreativeWork",
+      "name": "BrakeFlasher Metadata",
+      "identifier": "default-flash-v1",
+      "inLanguage": "en-US",
+      "dateModified": "2025-07-26T00:00:00Z",
+      "description": "Proprietary fallback configuration file with editable status set true. Used when dynamic config rendering fails.",
+      "license": "Proprietary – NDA / IP Assigned",
+      "isAccessibleForFree": false
     },
-    "instrument": {
-      "@type": "PropertyValue",
-      "name": "Input Pin",
-      "value": "D3"
+    {
+      "@context": "https://schema.org",
+      "@type": "Legislation",
+      "name": "Aftermarket Modification Safety Disclosure",
+      "jurisdiction": "US",
+      "description": "This configuration improves vehicle brake visibility and is designed to be revertible. Subject to local vehicle code compliance."
     },
-    "result": {
-      "@type": "PropertyValue",
-      "name": "Output Pin",
-      "value": "D4"
+    {
+      "@context": "https://schema.org",
+      "@type": "StructuredValue",
+      "name": "7DP Provenance Block",
+      "identifier": "7dp-default-flash-v1",
+      "additionalProperty": [
+        {
+          "@type": "PropertyValue",
+          "name": "Who",
+          "value": "Jeffrey Plewak, US"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "What",
+          "value": "Brake flasher configuration for third brake light"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "When",
+          "value": "2025-07-26"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "Where",
+          "value": "United States"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "Why",
+          "value": "Improve visibility and road safety"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "Which",
+          "value": "Arduino Nano, D3 input, D4 output"
+        },
+        {
+          "@type": "PropertyValue",
+          "name": "How",
+          "value": "Executed as Arduino firmware digital pattern"
+        }
+      ]
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "DataDownload",
+      "name": "Default Flash Pattern Config (Fallback)",
+      "fileFormat": "application/json",
+      "encodingFormat": "utf-8",
+      "contentUrl": "NDA_ONLY://default-flash-v1.json",
+      "description": "Fallback pattern config used when render fails"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Intangible",
+      "name": "Editable Fallback Config Flag",
+      "identifier": "editable-flag",
+      "value": true
     }
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "CreativeWork",
-    "name": "BrakeFlasher Metadata",
-    "identifier": "default-flash-v1",
-    "inLanguage": "en-US",
-    "dateModified": "2025-07-26T00:00:00Z",
-    "description": "Proprietary fallback configuration file with editable status set true. Used when dynamic config rendering fails.",
-    "license": "Proprietary – NDA / IP Assigned",
-    "isAccessibleForFree": false
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Legislation",
-    "name": "Aftermarket Modification Safety Disclosure",
-    "jurisdiction": "US",
-    "description": "This configuration improves vehicle brake visibility and is designed to be revertible. Subject to local vehicle code compliance."
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "StructuredValue",
-    "name": "7DP Provenance Block",
-    "identifier": "7dp-default-flash-v1",
-    "additionalProperty": [
-      { "@type": "PropertyValue", "name": "Who", "value": "Jeffrey Plewak, US" },
-      { "@type": "PropertyValue", "name": "What", "value": "Brake flasher configuration for third brake light" },
-      { "@type": "PropertyValue", "name": "When", "value": "2025-07-26" },
-      { "@type": "PropertyValue", "name": "Where", "value": "United States" },
-      { "@type": "PropertyValue", "name": "Why", "value": "Improve visibility and road safety" },
-      { "@type": "PropertyValue", "name": "Which", "value": "Arduino Nano, D3 input, D4 output" },
-      { "@type": "PropertyValue", "name": "How", "value": "Executed as Arduino firmware digital pattern" }
-    ]
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "DataDownload",
-    "name": "Default Flash Pattern Config (Fallback)",
-    "fileFormat": "application/json",
-    "encodingFormat": "utf-8",
-    "contentUrl": "NDA_ONLY://default-flash-v1.json",
-    "description": "Fallback pattern config used when render fails"
-  },
-  {
-    "@context": "https://schema.org",
-    "@type": "Intangible",
-    "name": "Editable Fallback Config Flag",
-    "identifier": "editable-flag",
-    "value": true
-  }
-]
-
+  ]
+}

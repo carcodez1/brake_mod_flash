@@ -1,22 +1,28 @@
 # ───────────────────────────────────────────
 # Core dependencies
-pyserial==3.5
-jsonschema==4.21.1
-pydantic==2.7.1
-python-dateutil==2.9.0.post0
-pyyaml==6.0.1  # Used in GUI/emulator
-jinja2==3.1.2  # For .ino template rendering
+pyserial
+jsonschema
+pydantic
+python-dateutil
+pyyaml             # Used in GUI/emulator
+jinja2             # For .ino template rendering
 
 # ───────────────────────────────────────────
 # GUI emulator
-matplotlib==3.7.5
+matplotlib         # Stable with tkinter compatibility
 
 # ───────────────────────────────────────────
 # Testing (CI/CD)
-pytest==8.2.1
-pytest-cov==4.1.0
-# mock==5.2.0  # Use only if Python <3.3, otherwise use unittest.mock
+pytest
+pytest-cov
+coverage           # Required by pytest-cov
 
 # ───────────────────────────────────────────
 # Packaging
-pyinstaller==6.6.0  # Lock version for deterministic builds
+pyinstaller        # Deterministic builds
+
+# ───────────────────────────────────────────
+# Optional (future use)
+# rich             # Fancy logging
+# cryptography     # Firmware signing
+# psutil           # System profiling

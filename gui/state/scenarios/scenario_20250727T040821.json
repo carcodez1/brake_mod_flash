@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "generated": "2025-07-27T04:08:21.733763Z",
+  "pattern": [
+    {
+      "count": 3,
+      "on": 100,
+      "off": 100
+    },
+    {
+      "count": 2,
+      "on": 200,
+      "off": 200
+    },
+    {
+      "count": 1,
+      "on": 400,
+      "off": 400
+    }
+  ],
+  "metadata": {
+    "config_id": "default-flash-v1",
+    "source": "emulator_gui",
+    "legal_notice": "Proprietary. NDA/IP assigned."
+  }
+}

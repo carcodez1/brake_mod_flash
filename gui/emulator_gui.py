@@ -17,7 +17,6 @@ from datetime import datetime
 from threading import Thread
 import time
 import argparse
-import stat
 from jsonschema import validate, ValidationError
 
 # ─────────────────────────────────────────────────────────────
@@ -43,8 +42,9 @@ DELAY_CAP_MS = 2000
 def check_path_access(path):
     if not os.access(path, os.W_OK):
         logging.warning(f"Write access denied: {path}")
-    st = os.stat(path)
-    logging.debug(f"Permissions for {path}: {oct(st.st_mode)}")
+    else:
+        st = os.stat(path)
+        logging.debug(f"Permissions for {path}: {oct(st.st_mode)}")
 
 os.makedirs(LOG_DIR, exist_ok=True)
 os.makedirs(SCENARIO_DIR, exist_ok=True)
@@ -210,6 +210,15 @@ if __name__ == "__main__":
     if args.headless:
         run_headless()
     else:
-        root = tk.Tk()
-        app = FlashEmulatorGUI(root)
-        root.mainloop()
+        if sys.platform.startswith("linux") and not os.environ.get("DISPLAY"):
+            logging.error("No DISPLAY found. Set DISPLAY=:0 or run with --headless.")
+            print("[✗] GUI display not found. Set DISPLAY or use: python emulator_gui.py --headless")
+            sys.exit(1)
+        try:
+            root = tk.Tk()
+            app = FlashEmulatorGUI(root)
+            root.mainloop()
+        except tk.TclError as e:
+            logging.error(f"TclError – GUI unavailable: {e}")
+            print(f"[✗] GUI error: {e}. Try using --headless or fix display settings.")
+            sys.exit(1)
