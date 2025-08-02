@@ -1,0 +1,14 @@
+{
+  "pattern_mode": "default",
+  "vehicle": "test_unit",
+  "pattern": [
+    { "count": 1, "on": 100, "off": 0 }
+  ],
+  "metadata": {
+    "vehicle": "test_unit",
+    "author": "Jeffrey Plewak",
+    "compliance": "debug",
+    "source": "preset",
+    "version": "1.0.0"
+  }
+}

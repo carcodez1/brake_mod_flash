@@ -1,0 +1,10 @@
+{
+  "_meta": "Optional per-license feature pricing.",
+  "addons": [
+    { "id": "vin_lock", "name": "VIN Lock Injector", "price_usd": 250 },
+    { "id": "pdf_quote", "name": "PDF Quote Generator", "price_usd": 100 },
+    { "id": "gpg_license", "name": "GPG License Signing", "price_usd": 75 },
+    { "id": "nfc_serial", "name": "NFC/Serial Tag Binding", "price_usd": 150 },
+    { "id": "qr_proof", "name": "Static QR Proof Embedding", "price_usd": 90 }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Brake Flasher Pattern Configuration",
+  "type": "object",
+  "required": ["pattern", "pattern_mode", "metadata"],
+  "additionalProperties": false,
+  "properties": {
+    "vehicle": {
+      "type": "string"
+    },
+    "pattern_mode": {
+      "type": "string",
+      "enum": [
+        "default",
+        "sport",
+        "luxury",
+        "compact",
+        "aggressive",
+        "strobe",
+        "illegal"
+      ]
+    },
+    "pattern": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["count", "on", "off"],
+        "additionalProperties": false,
+        "properties": {
+          "count": { "type": "integer", "minimum": 1 },
+          "on":    { "type": "integer", "minimum": 0 },
+          "off":   { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["version", "generated", "jurisdiction", "compliance_level"],
+      "additionalProperties": false,
+      "properties": {
+        "version": { "type": "string" },
+        "generated": { "type": "string", "format": "date-time" },
+        "jurisdiction": { "type": "string" },
+        "compliance_level": {
+          "type": "string",
+          "enum": ["legal", "noncompliant", "experimental", "banned"]
+        }
+      }
+    }
+  }
+}

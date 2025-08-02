@@ -1,0 +1,38 @@
+{
+  "who": {
+    "issuer": "MyGeo LLC",
+    "contact": "carcodez1@gmail.com",
+    "engineer": "Jeffrey Plewak"
+  },
+  "what": {
+    "description": "Genesis G80 2020 brake flasher firmware"
+  },
+  "when": "2025-07-27T00:00:00Z",
+  "where": {
+    "jurisdiction": "NCGS §66-311",
+    "location": "USA / North Carolina"
+  },
+  "why": {
+    "purpose": "Enhance visibility of high-mount stop lamp under FMVSS 108 compliance."
+  },
+  "which": {
+    "target_vehicle": ["Genesis G80 2020"],
+    "pattern_mode": "standard",
+    "compliance": "FMVSS 108"
+  },
+  "how": {
+    "profile_used": "standard"
+  },
+  "pattern": [
+    {
+      "count": 5,
+      "on": 75,
+      "off": 75
+    },
+    {
+      "count": 1,
+      "on": 10000,
+      "off": 0
+    }
+  ]
+}

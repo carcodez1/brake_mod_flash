@@ -1,0 +1,33 @@
+{
+  "_meta": "Defines license tiers with pricing and feature inclusion.",
+  "tiers": [
+    {
+      "id": "starter",
+      "name": "Tier 1 – Starter Kit",
+      "price_usd": 179,
+      "vin_limit": 1,
+      "includes": ["CLI access", "1 pattern", "No GUI", "No tools"]
+    },
+    {
+      "id": "installer",
+      "name": "Tier 2 – Installer License",
+      "price_usd": 1490,
+      "vin_limit": 25,
+      "includes": ["CLI + GUI", "25 patterns", "Emulator", "Delivery ZIP"]
+    },
+    {
+      "id": "fleet",
+      "name": "Tier 3 – Internal Fleet License",
+      "price_usd": 4900,
+      "vin_limit": -1,
+      "includes": ["Unlimited VINs", "Audit-ready", "GUI", "All addons included"]
+    },
+    {
+      "id": "oem",
+      "name": "Tier 4 – OEM License",
+      "price_usd": 17500,
+      "vin_limit": -1,
+      "includes": ["Resale rights", "Full source", "Custom GUI branding", "Audit + legal support"]
+    }
+  ]
+}

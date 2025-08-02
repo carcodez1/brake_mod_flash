@@ -1,0 +1,11 @@
+{
+  "vehicle": "kia_sportage_2020",
+  "pattern_mode": "sport",
+  "pattern": [{"count":4,"on":80,"off":80},{"count":3,"on":160,"off":160},{"count":2,"on":240,"off":240}],
+  "metadata": {
+    "version": "1.0.0",
+    "jurisdiction": "NCGS",
+    "compliance_level": "legal",
+    "generated": "2025-07-27T06:53:34Z"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "pattern_mode": "default",
+  "compliance_level": "standard",
+  "version": "1.0.0",
+  "pattern": [
+    {
+      "count": 3,
+      "on": 100,
+      "off": 150
+    }
+  ],
+  "generated": "2025-07-27T16:46:30.651645Z"
+}

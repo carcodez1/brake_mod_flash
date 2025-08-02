@@ -1,22 +1,27 @@
 #!/usr/bin/env bash
-# File: scripts/build_gui.sh
-# Purpose: Build BrakeFlasher GUI using PyInstaller
+# File: scripts/docker_run_gui.sh
+# Purpose: Launch BrakeFlasher GUI inside Docker with X11 support
 # Author: Jeffrey Plewak
-# License: Proprietary – NDA / IP Assignment
+# License: Proprietary – NDA/IP Assigned
+# Version: 1.0.0
 
 set -euo pipefail
 
-ROOT_DIR="$(dirname "$(realpath "$0")")/.."
-SPEC_FILE="$ROOT_DIR/gui/emulator_gui.spec"
-
-cd "$ROOT_DIR"
-echo "[*] Building BrakeFlasher GUI with PyInstaller..."
-
-pyinstaller "$SPEC_FILE"
-
-if [[ -f dist/BrakeFlashEmulator || -f dist/BrakeFlashEmulator.exe ]]; then
-  echo "[✓] GUI binary built successfully."
+# Detect platform-specific DISPLAY setting
+if grep -qEi "(Microsoft|WSL)" /proc/version &>/dev/null; then
+  export DISPLAY="$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}'):0"
+  export LIBGL_ALWAYS_INDIRECT=1
 else
-  echo "[✗] GUI binary not found. Build failed." >&2
-  exit 1
+  export DISPLAY="${DISPLAY:-:0}"
 fi
+
+# Allow X11 access
+xhost +local:docker &>/dev/null || true
+
+# Run container with GUI access
+docker run --rm \
+  -e DISPLAY="$DISPLAY" \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
+  -v "$(pwd)":/app \
+  --name brake_gui \
+  brake_gui

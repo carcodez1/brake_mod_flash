@@ -1,0 +1,11 @@
+{
+  "vehicle": "genesis_g90_2023",
+  "pattern_mode": "luxury",
+  "pattern": [{"count":2,"on":150,"off":150},{"count":2,"on":300,"off":300}],
+  "metadata": {
+    "version": "1.0.0",
+    "jurisdiction": "NCGS",
+    "compliance_level": "legal",
+    "generated": "2025-07-27T06:53:34Z"
+  }
+}

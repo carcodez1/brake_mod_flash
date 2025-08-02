@@ -1,13 +1,30 @@
 {
-  "version": "1.0.0",
+  "who": {
+    "issuer": "MyGeo LLC",
+    "contact": "jeff@jpgroup.tech",
+    "generated_by": "BrakeFlasher Toolkit v2.2.0"
+  },
+  "what": {
+    "description": "Default fallback flash pattern config for testing and preview."
+  },
+  "when": "2025-07-27T00:00:00Z",
+  "where": {
+    "jurisdiction": "NCGS §66-311",
+    "location": "North Carolina, USA"
+  },
+  "why": {
+    "purpose": "Safety visibility enhancement – default fallback."
+  },
+  "which": {
+    "target_vehicle": ["hyundai_sonata_2020"],
+    "pattern_mode": "standard",
+    "compliance": "FMVSS-compliant"
+  },
+  "how": {
+    "profile_used": "standard"
+  },
   "pattern": [
     { "count": 3, "on": 100, "off": 100 },
-    { "count": 2, "on": 200, "off": 200 },
-    { "count": 1, "on": 400, "off": 400 }
-  ],
-  "metadata": {
-    "config_id": "default-flash-v1",
-    "legal_notice": "Proprietary – NDA / IP Assigned",
-    "source": "fallback"
-  }
+    { "count": 1, "on": 9999, "off": 0 }
+  ]
 }

@@ -1,0 +1,79 @@
+{
+  "folders": [
+    { "path": "." },
+    { "path": "cli" },
+    { "path": "engine" },
+    { "path": "config" },
+    { "path": "firmware/sources" },
+    { "path": "firmware/binaries" },
+    { "path": "gui/state/presets" },
+    { "path": "tests" },
+    { "path": "output/zips" },
+    { "path": "release" }
+  ],
+  "settings": {
+    "python.defaultInterpreterPath": ".venv/bin/python",
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": ["tests"],
+    "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true,
+    "editor.formatOnSave": true,
+    "files.exclude": {
+      "**/__pycache__": true,
+      "**/.DS_Store": true,
+      "**/.venv": true
+    },
+    "files.associations": {
+      "*.json": "jsonc"
+    },
+    "json.schemas": [
+      {
+        "fileMatch": ["config/vehicles/*.json"],
+        "url": "./config/schema/flash_pattern.schema.json"
+      }
+    ],
+    "terminal.integrated.defaultProfile.linux": "bash",
+    "terminal.integrated.env.linux": {
+      "PYTHONPATH": "${workspaceFolder}"
+    }
+  },
+  "launch": {
+    "configurations": [
+      {
+        "name": "Run CLI",
+        "type": "python",
+        "request": "launch",
+        "program": "${workspaceFolder}/cli/cli.py",
+        "args": ["render", "--vehicle", "example_model_2020"],
+        "console": "integratedTerminal"
+      }
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Run Tests",
+        "type": "shell",
+        "command": "pytest tests",
+        "group": "test",
+        "problemMatcher": []
+      },
+      {
+        "label": "Render Firmware",
+        "type": "shell",
+        "command": "python cli/cli.py render --vehicle example_model_2020",
+        "group": "build",
+        "problemMatcher": []
+      },
+      {
+        "label": "Create ZIP",
+        "type": "shell",
+        "command": "python cli/cli.py zip --vehicle example_model_2020",
+        "group": "build",
+        "problemMatcher": []
+      }
+    ]
+  }
+}

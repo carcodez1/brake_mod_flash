@@ -1,0 +1,15 @@
+{
+  "pattern_mode": "luxury",
+  "vehicle": "hyundai_sonata_2020",
+  "pattern": [
+    { "count": 2, "on": 150, "off": 100 },
+    { "count": 1, "on": 300, "off": 150 }
+  ],
+  "metadata": {
+    "vehicle": "hyundai_sonata_2020",
+    "author": "Jeffrey Plewak",
+    "compliance": "legal",
+    "source": "preset",
+    "version": "1.0.0"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "pattern_mode": "aggressive",
+  "vehicle": "kia_forte_2021",
+  "pattern": [
+    { "count": 5, "on": 60, "off": 60 }
+  ],
+  "metadata": {
+    "vehicle": "kia_forte_2021",
+    "author": "Jeffrey Plewak",
+    "compliance": "experimental",
+    "source": "preset",
+    "version": "1.0.0"
+  }
+}

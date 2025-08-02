@@ -1,0 +1,14 @@
+{
+  "pattern_mode": "strobe",
+  "vehicle": "kia_k5_2022",
+  "pattern": [
+    { "count": 7, "on": 40, "off": 40 }
+  ],
+  "metadata": {
+    "vehicle": "kia_k5_2022",
+    "author": "Jeffrey Plewak",
+    "compliance": "experimental",
+    "source": "preset",
+    "version": "1.0.0"
+  }
+}

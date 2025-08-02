@@ -1,0 +1,23 @@
+{
+  "version": "2.3.0",
+  "firmware_version_short": "v20250727",
+  "timestamp": "2025-07-27T16:46:40.155715Z",
+  "checksum": "6a83ebb9e609a8e6c8fea1be1fe34a0936bcb5361c079a82037dc875951a6115",
+  "vehicle": [
+    "Unknown"
+  ],
+  "pattern_mode": "illegal",
+  "compliance_level": "unknown",
+  "pattern_length": 2,
+  "source": "/home/develop/brake_mod_flash/firmware/sources/hyundai_sonata_2023.ino",
+  "input_config_path": "/home/develop/brake_mod_flash/config/vehicles/hyundai_sonata_2023.json",
+  "7DP": {
+    "who": "unknown",
+    "what": "brake_flasher_firmware",
+    "when": "2025-07-27T16:46:40.155715Z",
+    "where": "unknown",
+    "why": "unspecified",
+    "which": {},
+    "how": "render_config_to_ino.py@2.3.0"
+  }
+}

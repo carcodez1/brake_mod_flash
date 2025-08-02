@@ -1,173 +1,228 @@
-# Makefile – Brake Light Flasher Toolkit (Enterprise Grade – PLE)
-# Version: 1.2.6
+# Makefile – Brake Light Flasher Toolkit (Enterprise-Grade PLE)
 # Author: Jeffrey Plewak
 # License: Proprietary – NDA / IP Assignment
-# Platforms: Windows (Git Bash / WSL2), macOS (Intel/Apple Silicon), Linux (Debian/Ubuntu)
+# Version: 2.4.0
 
-# ──────────────────────────────────────────────────────────────
-# PLATFORM-AWARE ENVIRONMENT
-ifeq ($(OS),Windows_NT)
-	PYTHON := python
-	PIP := .venv/Scripts/pip.exe
-	PY := .venv/Scripts/python.exe
-	SHELL := cmd
-else
-	PYTHON := python3
-	PIP := .venv/bin/pip
-	PY := .venv/bin/python
-	SHELL := /bin/bash
-endif
+.SHELLFLAGS := -euo pipefail -c
 
-# ──────────────────────────────────────────────────────────────
-# GLOBAL VARIABLES
-VENV_DIR := .venv
-GUI_SCRIPT := gui/emulator_gui.py
-FIRMWARE_SCRIPT := scripts/render_config_to_ino.py
-PYI_SPEC := gui/emulator_gui.spec
-OUTPUT_DIR := dist
-FIRMWARE_OUT := firmware/BrakeFlasher.ino
-HASH_OUT := firmware/metadata/firmware_hash.txt
-FINAL_ZIP := output/BrakeFlasher_PRO_v1.2.6.zip
-VERSION_FILE := firmware/metadata/firmware_version.json
+PYTHON = python3
+ARDUINO_CLI = arduino-cli
+SRC_DIR = firmware/sources
+BIN_DIR = firmware/binaries
+META_DIR = firmware/metadata
+META_CUSTOMER = $(META_DIR)/per_customer
+CONFIG_DIR = config/vehicles
+TEMPLATE = firmware/templates/BrakeFlasher.ino.j2
+SCHEMA = config/schema/flash_pattern.schema.json
+GEN_SCRIPT = scripts/render_config_to_ino.py
+TEST_SCRIPT = scripts/gen_test_assets.py
+VERSION_FILE = $(META_DIR)/version.json
+OUTPUT_ZIP = release/brakeflasher_release.zip
+RELEASE_MANIFEST = release/manifest.json
 
-# ──────────────────────────────────────────────────────────────
-# FULL BUILD PIPELINE
-all: install-deps gui firmware package checksum zip
+DEFAULT_VEHICLE = hyundai_sonata_2020
+DEFAULT_INO = $(SRC_DIR)/$(DEFAULT_VEHICLE).ino
+DEFAULT_HEX = $(BIN_DIR)/$(DEFAULT_VEHICLE).hex
 
-# ──────────────────────────────────────────────────────────────
-# VIRTUAL ENVIRONMENT
-venv:
-	@uname -a || ver
-	@if [ ! -d "$(VENV_DIR)" ]; then \
-		$(PYTHON) -m venv $(VENV_DIR); \
-	fi
-	@echo "[✓] Virtual environment ready."
+PORT ?= $(shell ls /dev/ttyUSB* 2>/dev/null | head -n1)
+GIT_TAG = $(shell git describe --tags --always 2>/dev/null || echo "no-tag")
 
-# ──────────────────────────────────────────────────────────────
-# DEPENDENCIES
-install-deps: venv
-	@echo "[*] Installing required packages..."
-	@$(PIP) install --upgrade pip
-	@$(PIP) install -r requirements.txt
-	@echo "[✓] Dependencies ready."
+.PHONY: all clean firmware compile flash test test-assets zip coverage docs help hash version flash-all test-full test-short gui run-gui package validate-schema \
+        build release package-summary sign docker-gui docker-release ci-test release-metadata
 
-# ──────────────────────────────────────────────────────────────
-# GUI EMULATOR – LAUNCH
-gui:
-	@echo "[*] Bootstrapping Emulator GUI..."
-	@bash scripts/install_gui.sh
+## all: Run full release pipeline (build, test, zip, sign, metadata)
+all: release
 
-# ──────────────────────────────────────────────────────────────
-# RENDER INO FROM CONFIG
-firmware:
-	@echo "[*] Rendering firmware..."
-	@$(PY) $(FIRMWARE_SCRIPT)
-	@if [ ! -f "$(FIRMWARE_OUT)" ]; then echo "[✗] Firmware generation failed."; exit 1; fi
-	@echo "[✓] Firmware generated: $(FIRMWARE_OUT)"
+## build: Generate firmware and binaries (no test or zip)
+build: clean test-assets firmware-all compile-all
 
-# ──────────────────────────────────────────────────────────────
-# COMPILE GUI BINARY
-package:
-	@echo "[*] Building GUI binary..."
-	@mkdir -p $(OUTPUT_DIR)
-	@$(PY) -m PyInstaller $(PYI_SPEC) --noconfirm
-	@if [ ! -f "$(OUTPUT_DIR)/BrakeFlashEmulator" ] && [ ! -f "$(OUTPUT_DIR)/BrakeFlashEmulator.exe" ]; then \
-		echo "[✗] Binary not found."; exit 1; fi
-	@echo "[✓] GUI binary built."
+## release: Full build → test → zip → hash → sign → manifest → summary
+release: build test-full zip hash sign release-metadata package-summary
 
-# ──────────────────────────────────────────────────────────────
-# FIRMWARE CHECKSUM
-checksum:
-	@echo "[*] Generating SHA256..."
-	@mkdir -p firmware/metadata
-	@$(PY) -c "import hashlib; f=open('$(FIRMWARE_OUT)','rb'); print(hashlib.sha256(f.read()).hexdigest())" > $(HASH_OUT)
-	@echo "[✓] Hash saved: $(HASH_OUT)"
+## help: Display this help message
+help:
+	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n\nTargets:\n"} /^[a-zA-Z0-9_-]+:.*##/ { printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 
-# ──────────────────────────────────────────────────────────────
-# TEST SUITE
-test:
-	@$(PY) -m pytest --cov=.
-
-# ──────────────────────────────────────────────────────────────
-# CLEAN BUILD ARTIFACTS
 clean:
-	@echo "[*] Cleaning build artifacts..."
-	@rm -rf $(VENV_DIR) build dist __pycache__ .pytest_cache
-	@rm -rf gui/__pycache__ gui/state/*
-	@rm -f logs/*.log
-	@rm -f firmware/*.ino firmware/metadata/*.json
-	@echo "[✓] Clean complete."
+	@echo "[•] Cleaning generated files..."
+	@rm -rf $(SRC_DIR)/*.ino $(BIN_DIR)/*.hex $(META_DIR)/*.json \
+		$(META_CUSTOMER)/*.json .pytest_cache coverage.xml htmlcov \
+		release/*.zip release/*.sig release/*.json || true
 
-# ──────────────────────────────────────────────────────────────
-# FULL REBUILD
-rebuild: clean all
+## firmware: Render firmware for the default vehicle
+firmware:
+	@echo "[•] Rendering firmware for default vehicle..."
+	@mkdir -p $(SRC_DIR) $(META_DIR)
+	$(PYTHON) $(GEN_SCRIPT) \
+		--input $(CONFIG_DIR)/$(DEFAULT_VEHICLE).json \
+		--template $(TEMPLATE) \
+		--output $(DEFAULT_INO) \
+		--meta $(META_DIR)/$(DEFAULT_VEHICLE).json \
+		--schema $(SCHEMA)
 
-# ──────────────────────────────────────────────────────────────
-# FLASH ARDUINO DEVICE
-flash:
-	@command -v arduino-cli >/dev/null || (echo "[✗] arduino-cli not found. Run: bash scripts/bootstrap_flash.sh" && exit 127)
-	@echo "[*] Flashing to Arduino Nano..."
-	arduino-cli upload -p /dev/ttyUSB0 --fqbn arduino:avr:nano firmware/BrakeFlasher.ino --verify --log-level info || \
-	(echo "[✗] Flash failed – check board and port." && exit 1)
-
-# ──────────────────────────────────────────────────────────────
-# PACKAGE PROJECT
-zip:
-	@mkdir -p output
-	@zip -r $(FINAL_ZIP) firmware gui docs config scripts run_all.* LICENSE requirements.txt
-	@echo "[✓] Package ready: $(FINAL_ZIP)"
-
-# ──────────────────────────────────────────────────────────────
-# DELIVERY
-delivery: zip
-	@echo ""
-	@echo "Delivery Complete:"
-	@echo "  ▶ ZIP: $(FINAL_ZIP)"
-	@echo "  ▶ Contents: firmware, GUI, config, scripts"
-	@echo "  ▶ Transfer: Notion / secure email / file portal"
-
-# ──────────────────────────────────────────────────────────────
-# VEHICLE-SPECIFIC BUILD
-vehicle:
-	@mkdir -p firmware/binaries firmware/metadata/per_customer/$(CUSTOMER)
-	@$(PY) $(FIRMWARE_SCRIPT) \
-		--input config/vehicles/$(VEHICLE).json \
-		--template templates/BrakeFlasher.ino.j2 \
-		--output firmware/binaries/$(VEHICLE).ino \
-		--meta firmware/metadata/per_customer/$(CUSTOMER)/firmware_version.json \
-		--board $(BOARD) \
-		--customer_id $(CUSTOMER)
-
-# ──────────────────────────────────────────────────────────────
-# RENDER ALL VEHICLE BINARIES
-render-all:
-	@for v in kia_optima_2019 nissan_altima_2021 hyundai_elantra_2018 kia_sorento_2022 genesis_g80_2023; do \
-		make vehicle VEHICLE=$$v CUSTOMER=cust_$$v BOARD=nano; \
+## firmware-all: Render firmware for all configured vehicles
+firmware-all:
+	@echo "[•] Rendering firmware for all vehicles..."
+	@mkdir -p $(SRC_DIR) $(META_CUSTOMER)
+	@for config in $(CONFIG_DIR)/*.json; do \
+		name=$$(basename $$config .json); \
+		echo "[•] Rendering: $$name"; \
+		$(PYTHON) $(GEN_SCRIPT) \
+			--input $$config \
+			--template $(TEMPLATE) \
+			--output $(SRC_DIR)/$$name.ino \
+			--meta $(META_CUSTOMER)/$$name.json \
+			--schema $(SCHEMA); \
 	done
 
-# ──────────────────────────────────────────────────────────────
-# USAGE
-help:
+## compile: Compile the default .ino file
+compile:
+	@echo "[•] Compiling default firmware..."
+	@mkdir -p $(BIN_DIR)
+	@if [ ! -f $(DEFAULT_INO) ]; then echo "[✗] Missing INO: $(DEFAULT_INO)"; exit 1; fi
+	$(ARDUINO_CLI) compile \
+		--fqbn arduino:avr:nano \
+		--output-dir $(BIN_DIR) $(DEFAULT_INO)
+
+## compile-all: Compile all .ino files to .hex
+compile-all:
+	@echo "[•] Compiling all firmware sources..."
+	@mkdir -p $(BIN_DIR)
+	@if [ -z "$$(ls -1 $(SRC_DIR)/*.ino 2>/dev/null)" ]; then echo "[✗] No .ino files found in $(SRC_DIR)"; exit 1; fi
+	@for ino in $(SRC_DIR)/*.ino; do \
+		echo "[•] Compiling: $$ino"; \
+		$(ARDUINO_CLI) compile \
+			--fqbn arduino:avr:nano \
+			--output-dir $(BIN_DIR) $$ino; \
+	done
+
+## flash: Upload the default .hex file to Arduino
+flash:
+	@echo "[•] Uploading firmware to Arduino on PORT: $(PORT)"
+	@if [ -z "$(PORT)" ]; then echo "[✗] No USB device found"; exit 1; fi
+	$(ARDUINO_CLI) upload \
+		--fqbn arduino:avr:nano \
+		--port $(PORT) \
+		--input-dir $(BIN_DIR) \
+		--input-file $(DEFAULT_HEX)
+
+## flash-all: Upload all compiled .hex files sequentially
+flash-all:
+	@echo "[•] Flashing ALL .hex files on PORT: $(PORT)"
+	@if [ -z "$(PORT)" ]; then echo "[✗] No USB device found"; exit 1; fi
+	@for hex in $(BIN_DIR)/*.hex; do \
+		echo "[•] Flashing: $$hex"; \
+		$(ARDUINO_CLI) upload \
+			--fqbn arduino:avr:nano \
+			--port $(PORT) \
+			--input-dir $(BIN_DIR) \
+			--input-file $$hex; \
+	done
+
+## test-assets: Generate vehicle test input configs
+test-assets:
+	@echo "[•] Generating test JSON configs..."
+	@$(PYTHON) $(TEST_SCRIPT)
+
+## test: Run short test suite
+test: test-short
+
+## test-short: Run minimal, fast test checks
+test-short:
+	@echo "[•] Running short test suite..."
+	pytest tests --tb=short --disable-warnings --maxfail=1 -x --strict-markers
+
+## test-full: Run full suite with coverage reports
+test-full:
+	@echo "[•] Running full test suite with coverage..."
+	pytest tests --cov=scripts --cov-report=term --cov-report=html --strict-markers
+
+## ci-test: Run tests in CI-friendly format (no color)
+ci-test:
+	@echo "[•] Running tests (CI mode)..."
+	pytest tests --cov=scripts --cov-report=term-missing --color=no --strict-markers
+
+## coverage: Generate local HTML code coverage
+coverage:
+	@echo "[•] Generating HTML coverage..."
+	pytest tests --cov=scripts --cov-report=html
+
+## validate-schema: Validate all configs with JSON schema
+validate-schema:
+	@echo "[•] Validating all JSON configs against schema..."
+	@for config in $(CONFIG_DIR)/*.json; do \
+		echo " → Validating: $$config"; \
+		$(PYTHON) -m jsonschema --instance $$config --schema $(SCHEMA); \
+	done
+
+## zip: Package deliverables into release ZIP
+zip:
+	@echo "[•] Packaging delivery ZIP..."
+	@mkdir -p release
+	@zip -r $(OUTPUT_ZIP) \
+		$(SRC_DIR) $(BIN_DIR) $(META_DIR) \
+		gui logs README.md LICENSE Makefile \
+		firmware/templates/ config/schema/ config/vehicles/
+
+## hash: Create SHA256 checksum of release
+hash:
+	@echo "[•] SHA256 hash of release ZIP:"
+	@sha256sum $(OUTPUT_ZIP) | tee $(OUTPUT_ZIP).sha256
+
+## sign: GPG sign the release ZIP (detached)
+sign:
+	@echo "[•] Signing release ZIP with GPG..."
+	@gpg --output $(OUTPUT_ZIP).sig --detach-sign $(OUTPUT_ZIP)
+
+## version: Show toolkit version (from metadata)
+version:
+	@echo "[•] Toolkit Version:"
+	@jq -r .version $(VERSION_FILE)
+
+## docs: View README in pager
+docs:
+	@less README.md
+
+## gui: Build GUI binary using PyInstaller
+gui:
+	@echo "[•] Building GUI executable..."
+	@./build_gui.sh
+
+## run-gui: Launch the emulator GUI
+run-gui:
+	@echo "[•] Launching Emulator GUI..."
+	@$(PYTHON) gui/emulator_gui.py
+
+## docker-gui: Run GUI in Docker Compose
+docker-gui:
+	@echo "[*] Running GUI in Docker..."
+	@docker compose -f docker-compose.gui.yml up --build
+
+## docker-release: Run release pipeline in Docker
+docker-release:
+	@echo "[*] Running full build in Docker (non-GUI)..."
+	@docker build -t brake_release .
+	@docker run --rm -v $(PWD):/app brake_release
+
+## release-metadata: Generate JSON manifest for release
+release-metadata:
+	@echo "[•] Writing release metadata..."
+	@mkdir -p release
+	@echo '{' > $(RELEASE_MANIFEST)
+	@echo '  "version": "'$$(jq -r .version $(VERSION_FILE))'",' >> $(RELEASE_MANIFEST)
+	@echo '  "git_tag": "$(GIT_TAG)",' >> $(RELEASE_MANIFEST)
+	@echo '  "build_time": "'$$(date -Iseconds)'",' >> $(RELEASE_MANIFEST)
+	@echo '  "vehicle_count": '$$(ls $(CONFIG_DIR)/*.json | wc -l) >> $(RELEASE_MANIFEST)
+	@echo '}' >> $(RELEASE_MANIFEST)
+
+## package-summary: Show final release summary
+package-summary:
 	@echo ""
-	@echo "Brake Flasher Toolkit – Makefile Targets"
-	@echo "──────────────────────────────────────────"
-	@echo "  make venv          – Setup virtualenv"
-	@echo "  make install-deps  – Install Python deps"
-	@echo "  make gui           – Run GUI emulator"
-	@echo "  make firmware      – Generate .ino firmware"
-	@echo "  make package       – Build GUI binary"
-	@echo "  make checksum      – Generate SHA256"
-	@echo "  make flash         – Flash Arduino"
-	@echo "  make zip           – Build delivery ZIP"
-	@echo "  make delivery      – Delivery summary"
-	@echo "  make test          – Run unit tests"
-	@echo "  make clean         – Cleanup project"
-	@echo "  make rebuild       – Full rebuild"
-	@echo "  make vehicle       – Build vehicle config (VEHICLE, CUSTOMER, BOARD)"
-	@echo "  make render-all    – Build all supported vehicles"
-	@echo "  make help          – Show this menu"
+	@echo "===Brake Flasher Toolkit Release Summary ==="
+	@echo "Version:         $$(jq -r .version $(VERSION_FILE))"
+	@echo "Git Tag:         $(GIT_TAG)"
+	@echo "Build Time:      $$(date -Iseconds)"
+	@echo "Vehicles Built:  $$(ls $(SRC_DIR)/*.ino | wc -l)"
+	@echo "Release Output:  $(OUTPUT_ZIP)"
+	@echo "SHA256:          $$(cut -d ' ' -f 1 $(OUTPUT_ZIP).sha256)"
 	@echo ""
-
-.PHONY: all venv install-deps gui firmware package checksum test clean rebuild flash zip delivery vehicle render-all help
-
-

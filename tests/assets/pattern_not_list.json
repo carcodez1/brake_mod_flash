@@ -1,0 +1,13 @@
+{
+  "pattern": {
+    "count": 3,
+    "on": 100,
+    "off": 100
+  },
+  "when": "2025-07-27",
+  "which": {
+    "target_vehicle": [
+      "Hyundai Sonata 2020"
+    ]
+  }
+}

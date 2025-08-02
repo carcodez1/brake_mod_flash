@@ -1,6 +1,8 @@
 // Auto-generated from Jinja2 template
 // Vehicle: Hyundai Sonata
 // Year: 2020
+#include<Arduino.h>
+
 const int inputPin = 3;
 const int outputPin = 4;
 

@@ -1,0 +1,13 @@
+{
+  "vehicle": "kia_niro_2022",
+  "pattern": [
+    {"count": 3, "on": 100, "off": 100},
+    {"count": 2, "on": 200, "off": 200},
+    {"count": 1, "on": 400, "off": 400}
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "jurisdiction": "NCGS",
+    "generated": "2025-07-27T06:46:52Z"
+  }
+}

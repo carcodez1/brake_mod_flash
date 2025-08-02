@@ -1,0 +1,69 @@
+# File: .github/workflows/test.yml
+# GitHub Actions CI for Brake Light Flasher Toolkit (Enterprise-Grade PLE)
+# Author: Jeffrey Plewak
+# License: Proprietary – NDA / IP Assignment
+# Version: 1.0.0
+
+name: BrakeFlasher CI
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Full Validation Suite
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install -r requirements.txt
+          pip install pytest pytest-cov jsonschema pyyaml
+
+      - name: Install arduino-cli
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+          sudo mv bin/arduino-cli /usr/local/bin/
+          arduino-cli config init
+          arduino-cli core update-index
+          arduino-cli core install arduino:avr
+
+      - name: Run test suite
+        run: |
+          . .venv/bin/activate
+          make test-full
+
+      - name: Generate delivery ZIP
+        run: |
+          make firmware-all
+          make compile-all
+          make zip
+          make hash
+
+      - name: Archive release ZIP + SHA256
+        uses: actions/upload-artifact@v4
+        with:
+          name: brakeflasher-delivery
+          path: |
+            release/brakeflasher_release.zip
+            release/brakeflasher_release.zip.sha256
+
+      - name: Upload HTML coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: htmlcov/

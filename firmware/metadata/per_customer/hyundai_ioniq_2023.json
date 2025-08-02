@@ -1,0 +1,23 @@
+{
+  "version": "2.3.0",
+  "firmware_version_short": "v20250727",
+  "timestamp": "2025-07-27T16:46:39.007535Z",
+  "checksum": "a1b03e6e6d53ae39a9786ab75cdac37fed25d3960f22f1ebc585babff8d6d8dd",
+  "vehicle": [
+    "Unknown"
+  ],
+  "pattern_mode": "aggressive",
+  "compliance_level": "unknown",
+  "pattern_length": 2,
+  "source": "/home/develop/brake_mod_flash/firmware/sources/hyundai_ioniq_2023.ino",
+  "input_config_path": "/home/develop/brake_mod_flash/config/vehicles/hyundai_ioniq_2023.json",
+  "7DP": {
+    "who": "unknown",
+    "what": "brake_flasher_firmware",
+    "when": "2025-07-27T16:46:39.007535Z",
+    "where": "unknown",
+    "why": "unspecified",
+    "which": {},
+    "how": "render_config_to_ino.py@2.3.0"
+  }
+}

@@ -1,0 +1,73 @@
+✅ Below is the **reviewed, corrected, and enhanced version** of your `context.json` block — professionally hardened for onboarding, CI/CD pipelines, and multi-developer environments.
+
+It includes clarified responsibilities, explicit modularization paths, install enforcement flags, and next-step guidance. This version is ready for drop-in use in `/docs/context.json`, `.code-workspace`, or internal Notion documentation.
+
+---
+
+### 📁 `brakeflasher/context.json` (v1.0.1, Hardened)
+
+```json
+{
+  "project": "BrakeFlasher Toolkit",
+  "version": "1.0.1",
+  "description": "Embedded firmware generation and delivery system for programmable third brake light behavior on Hyundai/Kia vehicles (2010+), supporting analog and OBD-II input with CLI/GUI configuration, manifesting, and audit-ready output.",
+  "languages": ["Python 3.11+", "Arduino C++"],
+  "hardware": ["Arduino Nano", "OBD-II interface (CAN-capable)", "12V analog brake input (opto-isolated)"],
+  "structure": {
+    "cli/cli.py": "Command-line interface with subcommands: render, validate, zip, assets, meta, manifest",
+    "engine/codegen.py": "Firmware generator: converts validated JSON config into .ino with embedded metadata",
+    "engine/validate.py": "Validates JSON configs against strict schema with Draft7 JSON Schema enforcement",
+    "engine/meta.py": "Handles versioning, SHA256 hash generation, and structured manifest output",
+    "engine/delivery.py": "Creates installer-ready .zip bundles with firmware, config, manifest",
+    "engine/assets.py": "Generates test pattern JSONs for CI coverage and edge case simulation",
+    "config/schema/flash_pattern.schema.json": "Strict schema for flash pattern configs (pattern[], metadata)",
+    "config/vehicles/*.json": "Per-vehicle configurations to be compiled into firmware",
+    "firmware/sources/*.ino": "Generated Arduino firmware from config (human-readable)",
+    "firmware/binaries/*.hex": "Compiled Arduino binaries (planned via arduino-cli)",
+    "gui/state/presets/*.json": "Predefined safe/debug/strobe presets for fast config",
+    "gui/emulator_gui.py": "Monolithic GUI: pattern editor, emulator preview, subprocess trigger (modularization pending)",
+    "output/zips/*.zip": "Final delivery package containing firmware, config, and audit manifest",
+    "release/manifest.json": "SHA256 digest of all firmware sources, with build fingerprinting",
+    "tests/*.py": "Unit test coverage across codegen, delivery, meta, validate, assets",
+    "version.json": "Central version/ID metadata injected into all outputs and headers"
+  },
+  "modularization_plan": {
+    "gui/config_editor.py": "Pattern editing and preset loader",
+    "gui/emulator.py": "Cycle-based preview of pattern flash behavior",
+    "gui/autodetect.py": "Detect board, ports, environment (WSL2, Windows, macOS, Linux)"
+  },
+  "licensing_tiers": {
+    "tier_1": "Single-vehicle use, hardware only, no GUI or software tools",
+    "tier_2": "Installer access to CLI + GUI + emulator, up to 25 VINs (honor-based)",
+    "tier_3": "Unlimited installs internal to organization, full CLI + rollback + manifest audit",
+    "tier_4": "OEM/reseller license with full source, branding rights, redistribution, SLA"
+  },
+  "enforcement": {
+    "vin_lock": false,
+    "uuid_binding": false,
+    "honor_based_limit": true,
+    "max_installs_tier_2": 25,
+    "manifest_required": true,
+    "config_validation_required": true
+  },
+  "build_targets": {
+    "render": "Generate firmware from config",
+    "validate": "Run schema validation against JSON",
+    "assets": "Generate test patterns",
+    "manifest": "Write versioned SHA256 manifest",
+    "zip": "Create delivery .zip package",
+    "hex": "Compile .ino to .hex via arduino-cli (planned)",
+    "gui": "Launch GUI (emulator/configurator, optional)"
+  },
+  "ci_ready": true,
+  "delivery_ready": true,
+  "court_admissibility_ready": false,
+  "recommended_next_steps": [
+    "Modularize gui/emulator_gui.py into 3 standalone modules",
+    "Add Makefile with targets for test, render, validate, zip, hex, gui",
+    "Add arduino-cli integration for compiling .ino to .hex binaries",
+    "Enable VIN-based audit logging in delivery manifest or flash trace",
+    "Add optional PDF/A-3 flash certificate generator (per config)",
+    "Expose CLI + GUI functions as Flask API for remote flashing or preview"
+  ]
+}

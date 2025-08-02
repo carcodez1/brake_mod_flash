@@ -1,0 +1,23 @@
+{
+  "version": "2.3.0",
+  "firmware_version_short": "v20250727",
+  "timestamp": "2025-07-27T16:46:38.440958Z",
+  "checksum": "4e7ac2f0272f14d82036d1f2d458a0b1be8cd1e52da9d558426d85a8052326d8",
+  "vehicle": [
+    "Unknown"
+  ],
+  "pattern_mode": "compact",
+  "compliance_level": "unknown",
+  "pattern_length": 3,
+  "source": "/home/develop/brake_mod_flash/firmware/sources/hyundai_elantra_2021.ino",
+  "input_config_path": "/home/develop/brake_mod_flash/config/vehicles/hyundai_elantra_2021.json",
+  "7DP": {
+    "who": "unknown",
+    "what": "brake_flasher_firmware",
+    "when": "2025-07-27T16:46:38.440958Z",
+    "where": "unknown",
+    "why": "unspecified",
+    "which": {},
+    "how": "render_config_to_ino.py@2.3.0"
+  }
+}

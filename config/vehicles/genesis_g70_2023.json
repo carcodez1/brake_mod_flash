@@ -1,0 +1,11 @@
+{
+  "vehicle": "genesis_g70_2023",
+  "pattern_mode": "aggressive",
+  "pattern": [{"count":6,"on":60,"off":60},{"count":4,"on":120,"off":120}],
+  "metadata": {
+    "version": "1.0.0",
+    "jurisdiction": "NCGS",
+    "compliance_level": "noncompliant",
+    "generated": "2025-07-27T06:53:34Z"
+  }
+}

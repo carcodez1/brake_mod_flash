@@ -1,0 +1,15 @@
+{
+  "pattern_mode": "compact",
+  "vehicle": "kia_rio_2019",
+  "pattern": [
+    { "count": 2, "on": 100, "off": 80 },
+    { "count": 1, "on": 250, "off": 0 }
+  ],
+  "metadata": {
+    "vehicle": "kia_rio_2019",
+    "author": "Jeffrey Plewak",
+    "compliance": "legal",
+    "source": "preset",
+    "version": "1.0.0"
+  }
+}

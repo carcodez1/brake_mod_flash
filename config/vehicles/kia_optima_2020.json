@@ -1,0 +1,18 @@
+{
+  "pattern_mode": "luxury",
+  "compliance_level": "europe",
+  "version": "1.0.0",
+  "pattern": [
+    {
+      "count": 2,
+      "on": 120,
+      "off": 180
+    },
+    {
+      "count": 1,
+      "on": 600,
+      "off": 0
+    }
+  ],
+  "generated": "2025-07-27T16:46:30.690542Z"
+}

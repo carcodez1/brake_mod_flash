@@ -3,7 +3,7 @@
 # Purpose: Generate .ino + .hex + metadata + delivery ZIPs for all configured vehicles
 # Author: Jeffrey Plewak
 # License: Proprietary – NDA/IP Assignment
-# Version: 2.2.0
+# Version: 2.3.1
 
 set -euo pipefail
 
@@ -17,11 +17,17 @@ FIRMWARE_DIR="$ROOT_DIR/firmware"
 SCRIPT_DIR="$ROOT_DIR/scripts"
 ZIP_DIR="$OUTPUT_DIR/zips"
 LOG_DIR="$ROOT_DIR/logs"
-
+META_DIR="$FIRMWARE_DIR/metadata/per_customer"
+SRC_DIR="$FIRMWARE_DIR/sources"
+BIN_DIR="$FIRMWARE_DIR/binaries"
+MANIFEST="$ROOT_DIR/sha256_manifest.txt"
 RENDER_SCRIPT="$SCRIPT_DIR/render_config_to_ino.py"
-TIMESTAMP=$(date -u +"%Y%m%dT%H%M%SZ")
+SCHEMA_PATH="$ROOT_DIR/config/schema/flash_pattern.schema.json"
+TIMESTAMP="$(date -u +"%Y%m%dT%H%M%SZ")"
+FQBN="${FQBN:-arduino:avr:nano:cpu=atmega328old}"
 
-mkdir -p "$OUTPUT_DIR" "$ZIP_DIR" "$LOG_DIR"
+mkdir -p "$OUTPUT_DIR" "$ZIP_DIR" "$LOG_DIR" "$META_DIR" "$SRC_DIR" "$BIN_DIR"
+rm -f "$MANIFEST"
 
 # ─────────────────────────────────────────────────────────────
 # COUNTERS
@@ -34,63 +40,91 @@ fail=0
 # MAIN LOOP
 # ─────────────────────────────────────────────────────────────
 echo "────────────────────────────────────────────────────────────"
-echo "GENERATOR: ALL VEHICLE FIRMWARE"
+echo "GENERATOR: ALL VEHICLE FIRMWARE PACKAGE BUILDER"
 echo "Start Time : $TIMESTAMP"
 echo "Config Dir : $CONFIG_DIR"
 echo "Output Dir : $ZIP_DIR"
 echo "────────────────────────────────────────────────────────────"
 
-for config in "$CONFIG_DIR"/*.json; do
+shopt -s nullglob
+CONFIG_FILES=("$CONFIG_DIR"/*.json)
+
+if [[ ${#CONFIG_FILES[@]} -eq 0 ]]; then
+  echo "[✗] No config files found in $CONFIG_DIR"
+  exit 1
+fi
+
+for config in "${CONFIG_FILES[@]}"; do
   ((total++))
-  vehicle_name="$(basename "$config" .json)"
-  vehicle_out="$OUTPUT_DIR/$vehicle_name"
-  vehicle_log="$LOG_DIR/${vehicle_name}_build.log"
-  version_json="$vehicle_out/version.json"
+  name="$(basename "$config" .json)"
+  vehicle_out="$OUTPUT_DIR/$name"
+  build_log="$LOG_DIR/${name}_build.log"
+  ino_path="$SRC_DIR/${name}.ino"
+  meta_path="$META_DIR/${name}.json"
+  hex_path="$BIN_DIR/${name}.hex"
+  manifest_path="$vehicle_out/manifest.json"
 
-  echo "→ Processing: $vehicle_name"
+  echo "→ Processing: $name"
 
-  # Clean + create output folder
   rm -rf "$vehicle_out"
   mkdir -p "$vehicle_out"
 
-  # Render .ino + metadata
+  echo "  [•] Rendering firmware..."
   if ! python3 "$RENDER_SCRIPT" \
-      --config "$config" \
-      --output "$vehicle_out/BrakeFlasher.ino" \
-      --meta "$version_json" >"$vehicle_log" 2>&1; then
-    echo "  [ERROR] Firmware render failed – see: $vehicle_log"
+      --input "$config" \
+      --output "$ino_path" \
+      --meta "$meta_path" \
+      --schema "$SCHEMA_PATH" \
+      --template "$FIRMWARE_DIR/templates/BrakeFlasher.ino.j2" \
+      > "$build_log" 2>&1; then
+    echo "  [✗] Render failed → $build_log"
     ((fail++))
     continue
   fi
 
-  # Compile .ino → .hex
-  echo "  Compiling..."
+  echo "  [•] Compiling firmware..."
   if ! arduino-cli compile \
-      --fqbn arduino:avr:nano:cpu=atmega328old \
+      --fqbn "$FQBN" \
       --build-path "$vehicle_out/build" \
-      "$vehicle_out/BrakeFlasher.ino" >>"$vehicle_log" 2>&1; then
-    echo "  [ERROR] Compilation failed – see: $vehicle_log"
+      "$ino_path" >> "$build_log" 2>&1; then
+    echo "  [✗] Compilation failed → $build_log"
     ((fail++))
     continue
   fi
 
-  HEX_FILE="$vehicle_out/build/BrakeFlasher.ino.hex"
-  if [ ! -f "$HEX_FILE" ]; then
-    echo "  [ERROR] HEX file missing after compile"
+  compiled_hex="$(find "$vehicle_out/build" -name '*.hex' | head -n1)"
+  if [[ ! -f "$compiled_hex" ]]; then
+    echo "  [✗] HEX missing → $compiled_hex"
     ((fail++))
     continue
   fi
 
-  cp "$HEX_FILE" "$vehicle_out/BrakeFlasher.ino.hex"
+  cp "$compiled_hex" "$hex_path"
+  cp "$hex_path" "$vehicle_out/BrakeFlasher.ino.hex"
+  cp "$ino_path" "$vehicle_out/BrakeFlasher.ino"
+  cp "$meta_path" "$vehicle_out/firmware_version.json"
+  cp "$config" "$vehicle_out/input_config.json"
   rm -rf "$vehicle_out/build"
 
-  # Package .zip
-  ZIP_FILE="$ZIP_DIR/${vehicle_name}_${TIMESTAMP}.zip"
-  (
-    cd "$vehicle_out"
-    zip -qr "$ZIP_FILE" .
-  )
-  echo "  [✓] Generated: $(basename "$ZIP_FILE")"
+  # Create manifest
+  jq -n --arg name "$name" --arg time "$TIMESTAMP" --arg version "$(jq -r .version "$meta_path")" \
+    '{
+      vehicle: $name,
+      version: $version,
+      generated: $time
+    }' > "$manifest_path"
+
+  # Package ZIP
+  ZIP_FILE="$ZIP_DIR/${name}_${TIMESTAMP}.zip"
+  (cd "$vehicle_out" && zip -qr "$ZIP_FILE" .)
+  echo "  [✓] ZIP complete: $(basename "$ZIP_FILE")"
+
+  # SHA256
+  sha256sum "$ino_path" >> "$MANIFEST"
+  sha256sum "$meta_path" >> "$MANIFEST"
+  sha256sum "$hex_path" >> "$MANIFEST"
+  sha256sum "$ZIP_FILE" >> "$MANIFEST"
+
   ((success++))
 done
 
@@ -99,16 +133,11 @@ done
 # ─────────────────────────────────────────────────────────────
 echo "────────────────────────────────────────────────────────────"
 echo "SUMMARY"
-echo "Total Configs  : $total"
-echo "Successful     : $success"
-echo "Failed         : $fail"
-echo "ZIP Output Dir : $ZIP_DIR"
+echo "Generated     : $success"
+echo "Failed        : $fail"
+echo "Total         : $total"
+echo "Output ZIPs   : $ZIP_DIR"
+echo "SHA Manifest  : $MANIFEST"
 echo "────────────────────────────────────────────────────────────"
 
-if [[ "$fail" -gt 0 ]]; then
-  echo "RECOMMENDATION: Review logs in $LOG_DIR/*.log for failure reasons."
-  exit 1
-else
-  echo "All vehicle firmware packages built successfully."
-  exit 0
-fi
+[[ "$fail" -gt 0 ]] && exit 1 || exit 0

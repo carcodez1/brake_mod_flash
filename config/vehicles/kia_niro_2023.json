@@ -1,0 +1,11 @@
+{
+  "vehicle": "kia_niro_2023",
+  "pattern_mode": "compact",
+  "pattern": [{"count":3,"on":90,"off":90},{"count":2,"on":180,"off":180},{"count":1,"on":300,"off":300}],
+  "metadata": {
+    "version": "1.0.0",
+    "jurisdiction": "NCGS",
+    "compliance_level": "legal",
+    "generated": "2025-07-27T06:53:34Z"
+  }
+}

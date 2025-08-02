@@ -1,0 +1,78 @@
+# BrakeFlasher Toolkit – INSTALL + USAGE GUIDE (Offline Release Edition)
+# Version: 2.1.0
+# Author: Jeffrey Plewak
+# License: Proprietary – NDA/IP Assignment
+# Target: Offline Delivery for Installers / End Customers
+
+────────────────────────────────────────────────────────────
+📦 CONTENTS OF THIS PACKAGE
+────────────────────────────────────────────────────────────
+This ZIP includes everything needed to use and verify the Brake Light Flasher Toolkit:
+
+- firmware/sources/            → Arduino .ino source code per vehicle
+- firmware/binaries/           → Precompiled .hex files for flashing
+- firmware/metadata/           → Versioned JSON metadata for each firmware
+- gui/                         → GUI pattern editor and firmware builder
+- logs/                        → Build logs and trace outputs
+- README-INSTALL.txt           → This guide
+- LICENSE                      → Legal agreement (NDA/IP)
+- Makefile                     → Optional (advanced rebuilds)
+- brakeflasher_release.zip     → This ZIP file
+- brakeflasher_release.zip.sha256 → SHA256 hash for integrity
+
+────────────────────────────────────────────────────────────
+✅ SYSTEM REQUIREMENTS
+────────────────────────────────────────────────────────────
+• OS: Windows (WSL2 recommended), Linux, or macOS  
+• Python 3.11+ (required)  
+• arduino-cli (optional unless re-flashing)  
+• tkinter (for GUI mode)  
+• Git Bash or shell (for Makefile or shell script usage)
+
+────────────────────────────────────────────────────────────
+🛠 QUICK START (Offline ZIP usage)
+────────────────────────────────────────────────────────────
+1. Extract the ZIP to any folder.
+
+2. (Optional) Verify the ZIP:
+   > sha256sum -c brakeflasher_release.zip.sha256
+
+3. Launch the GUI to review or customize flashing pattern:
+   > python3 gui/emulator_gui.py
+
+4. Flash a precompiled `.hex` to your Arduino Nano:
+   > arduino-cli upload --fqbn arduino:avr:nano --port COM3 --input-dir firmware/binaries --input-file hyundai_sonata_2020.hex
+
+5. (Advanced) Rebuild firmware:
+   > python3 scripts/render_config_to_ino.py --input config/vehicles/hyundai_sonata_2020.json --output firmware/sources/hyundai_sonata_2020.ino --template firmware/templates/BrakeFlasher.ino.j2 --meta firmware/metadata/hyundai_sonata_2020.json --schema config/schema/flash_pattern.schema.json
+
+6. (Optional) Run GUI pattern editor with sliders + YAML export:
+   > make gui
+
+────────────────────────────────────────────────────────────
+🔐 LEGAL + HASH VERIFICATION
+────────────────────────────────────────────────────────────
+To verify this release’s authenticity:
+
+> sha256sum -c brakeflasher_release.zip.sha256
+
+Match must be exact.
+All files are protected under NDA/IP and may not be redistributed.
+
+────────────────────────────────────────────────────────────
+📞 SUPPORT
+────────────────────────────────────────────────────────────
+Engineer: Jeffrey Plewak  
+Email: carcodez1@gmail.com  
+License: Internal Use Only – Not for Public Distribution
+
+────────────────────────────────────────────────────────────
+🧾 VERSION
+────────────────────────────────────────────────────────────
+BrakeFlasher Toolkit v2.1.0  
+Release Timestamp: [AUTO-GENERATED]  
+Target Platform: Arduino Nano, 5V, 16MHz  
+Configuration: Hyundai / Kia third brake light  
+Output: Programmable flashing brake signal, ends solid  
+Schema: JSON (Draft-07) w/ full versioned metadata  
+GUI: tkinter + ttk interface with export, trace, build
